@@ -1,10 +1,15 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useTheme } from '@/theme/useTheme';
 
 interface EmptyLibraryStateProps {
   onAddGames: () => void;
 }
 
 export function EmptyLibraryState({ onAddGames }: EmptyLibraryStateProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View style={styles.container}>
       <Text style={styles.icon}>🎮</Text>
@@ -19,7 +24,7 @@ export function EmptyLibraryState({ onAddGames }: EmptyLibraryStateProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
@@ -33,23 +38,23 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#2c3e50',
+    color: colors.textPrimary,
     marginBottom: 12,
     textAlign: 'center',
   },
   text: {
     fontSize: 16,
-    color: '#7f8c8d',
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 32,
   },
   button: {
-    backgroundColor: '#3498db',
+    backgroundColor: colors.accent,
     paddingHorizontal: 32,
     paddingVertical: 14,
     borderRadius: 12,
-    shadowColor: '#3498db',
+    shadowColor: colors.accent,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,

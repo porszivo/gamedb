@@ -1,4 +1,6 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { useTheme } from '@/theme/useTheme';
 
 interface LibraryHeaderProps {
   gameCount: number;
@@ -21,6 +23,9 @@ export function LibraryHeader({
                                 filterOptions,
                                 onFilterChange,
                               }: LibraryHeaderProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View style={styles.header}>
       {/* Top Section */}
@@ -53,7 +58,7 @@ export function LibraryHeader({
         <TextInput
           style={styles.searchInput}
           placeholder="Spiele durchsuchen..."
-          placeholderTextColor="#7f8c8d"
+          placeholderTextColor={colors.textTertiary}
           value={searchQuery}
           onChangeText={onSearchChange}
         />
@@ -87,14 +92,14 @@ export function LibraryHeader({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   header: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.secondary,
     paddingTop: 16,
     paddingHorizontal: 20,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e1e8ed',
+    borderBottomColor: colors.border,
   },
   headerTop: {
     flexDirection: 'row',
@@ -105,11 +110,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#2c3e50',
+    color: colors.textPrimary,
   },
   subtitle: {
     fontSize: 14,
-    color: '#7f8c8d',
+    color: colors.textSecondary,
     marginTop: 4,
   },
   viewModeButtons: {
@@ -120,21 +125,21 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 10,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: colors.tertiary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   viewModeButtonActive: {
-    backgroundColor: '#3498db',
+    backgroundColor: colors.accent,
   },
   viewModeIcon: {
     fontSize: 18,
-    color: '#495057',
+    color: colors.textSecondary,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: colors.tertiary,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -147,11 +152,11 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 16,
-    color: '#2c3e50',
+    color: colors.textPrimary,
   },
   searchClear: {
     fontSize: 18,
-    color: '#7f8c8d',
+    color: colors.textSecondary,
     fontWeight: '600',
   },
   filterContainer: {
@@ -162,20 +167,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: colors.tertiary,
     borderWidth: 1,
-    borderColor: '#e1e8ed',
+    borderColor: colors.border,
   },
   filterChipActive: {
-    backgroundColor: '#e8f4f8',
-    borderColor: '#3498db',
+    backgroundColor: colors.surfaceVariant,
+    borderColor: colors.accent,
   },
   filterChipText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#7f8c8d',
+    color: colors.textSecondary,
   },
   filterChipTextActive: {
-    color: '#3498db',
+    color: colors.accent,
   },
 });

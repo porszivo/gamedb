@@ -1,5 +1,7 @@
+import { useMemo } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Game } from '@/store/useGameStore';
+import { useTheme } from '@/theme/useTheme';
 
 interface GameCardListProps {
   game: Game;
@@ -10,6 +12,9 @@ interface GameCardListProps {
 }
 
 export function GameCardList({game, onPress, onActionPress, isFavorite = false, addedDate}: GameCardListProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
       {/* Cover */}
@@ -60,13 +65,13 @@ export function GameCardList({game, onPress, onActionPress, isFavorite = false, 
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   card: {
     flexDirection: 'row',
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.secondary,
     borderRadius: 16,
     padding: 12,
-    shadowColor: '#000',
+    shadowColor: colors.shadow,
     shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.06,
     shadowRadius: 6,
@@ -77,7 +82,7 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 8,
     overflow: 'hidden',
-    backgroundColor: '#e9ecef',
+    backgroundColor: colors.tertiary,
   },
   cover: {
     width: '100%',
@@ -87,7 +92,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f1f3f5',
+    backgroundColor: colors.tertiary,
   },
   placeholderIcon: {
     fontSize: 24,
@@ -106,7 +111,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     fontWeight: '700',
-    color: '#2c3e50',
+    color: colors.textPrimary,
     marginRight: 8,
   },
   favoriteIcon: {
@@ -114,24 +119,24 @@ const styles = StyleSheet.create({
   },
   platform: {
     fontSize: 13,
-    color: '#7f8c8d',
+    color: colors.textSecondary,
     marginBottom: 4,
   },
   date: {
     fontSize: 12,
-    color: '#95a5a6',
+    color: colors.textTertiary,
   },
   actionButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: colors.tertiary,
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'center',
   },
   actionIcon: {
     fontSize: 20,
-    color: '#495057',
+    color: colors.textSecondary,
   },
 });

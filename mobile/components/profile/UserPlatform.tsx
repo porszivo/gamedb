@@ -1,14 +1,17 @@
+import { useMemo } from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { getPlatformLabel, IGDBPlatform } from '@/components/game/Platforms';
 import React from 'react';
 import { useUserStore } from '@/store/useUserStore';
+import { useTheme } from '@/theme/useTheme';
 
 type UserPlatformProps = {
   onShowPlatformPicker: () => void;
 };
 
 export default function UserPlatform({onShowPlatformPicker}: UserPlatformProps) {
-
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const {userSettings, removePlatform} = useUserStore();
 
   const handleRemovePlatform = (platform: IGDBPlatform) => {
@@ -93,9 +96,9 @@ export default function UserPlatform({onShowPlatformPicker}: UserPlatformProps) 
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   section: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.secondary,
     marginTop: 20,
     paddingVertical: 24,
     paddingHorizontal: 20,
@@ -115,16 +118,16 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#2c3e50',
+    color: colors.textPrimary,
     marginBottom: 4,
   },
   sectionSubtitle: {
     fontSize: 14,
-    color: '#7f8c8d',
+    color: colors.textSecondary,
     lineHeight: 20,
   },
   platformsList: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: colors.tertiary,
     borderRadius: 12,
     overflow: 'hidden',
     marginBottom: 16,
@@ -135,7 +138,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 14,
     paddingHorizontal: 16,
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.secondary,
   },
   platformItemLeft: {
     flexDirection: 'row',
@@ -146,7 +149,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 10,
-    backgroundColor: '#e8f4f8',
+    backgroundColor: colors.tertiary,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -157,32 +160,32 @@ const styles = StyleSheet.create({
   platformName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#2c3e50',
+    color: colors.textPrimary,
     flex: 1,
   },
   removeButton: {
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 8,
-    backgroundColor: '#fee',
+    backgroundColor: colors.tertiary,
     borderWidth: 1,
-    borderColor: '#fcc',
+    borderColor: colors.error,
   },
   removeButtonText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#e74c3c',
+    color: colors.error,
   },
   platformSeparator: {
     height: 1,
-    backgroundColor: '#e1e8ed',
+    backgroundColor: colors.border,
     marginLeft: 68,
   },
   emptyPlatforms: {
     alignItems: 'center',
     paddingVertical: 40,
     paddingHorizontal: 20,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: colors.tertiary,
     borderRadius: 12,
     marginBottom: 16,
   },
@@ -193,22 +196,22 @@ const styles = StyleSheet.create({
   emptyPlatformsText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#2c3e50',
+    color: colors.textPrimary,
     marginBottom: 4,
   },
   emptyPlatformsSubtext: {
     fontSize: 14,
-    color: '#7f8c8d',
+    color: colors.textSecondary,
   },
   addPlatformButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#3498db',
+    backgroundColor: colors.accent,
     borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 20,
-    shadowColor: '#3498db',
+    shadowColor: colors.accent,
     shadowOffset: {
       width: 0,
       height: 2,

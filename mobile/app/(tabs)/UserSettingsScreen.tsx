@@ -1,16 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, } from 'react-native';
 import { useUserStore } from '@/store/useUserStore';
 import { getAllPlatforms, getPlatformLabel, IGDBPlatform } from '@/components/game/Platforms';
 import UserPlatform from '@/components/profile/UserPlatform';
+import { useTheme } from '@/theme/useTheme';
+import { ThemeMode } from '@/theme/types';
 
 const LANGUAGES = [
   {code: 'de', label: '🇩🇪 Deutsch', flag: '🇩🇪'},
   {code: 'en', label: '🇬🇧 English', flag: '🇬🇧'},
 ];
 
-export default function UserSettingsScreen() {
+const THEME_OPTIONS: Array<{mode: ThemeMode; label: string; icon: string}> = [
+  {mode: 'light', label: 'Hell', icon: '☀️'},
+  {mode: 'dark', label: 'Dunkel', icon: '🌙'},
+  {mode: 'system', label: 'System', icon: '⚙️'},
+];
 
+export default function UserSettingsScreen() {
+  const { colors, setThemeMode: changeTheme } = useTheme();
   const {
     userSettings,
     addPlatform,
@@ -19,6 +27,7 @@ export default function UserSettingsScreen() {
   } = useUserStore();
 
   const [showPlatformPicker, setShowPlatformPicker] = useState(false);
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const handleLanguageChange = (languageCode: string) => {
     changeLanguage(languageCode);
@@ -104,6 +113,51 @@ export default function UserSettingsScreen() {
           </View>
         </View>
 
+        {/* Theme Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionIcon}>🎨</Text>
+            <View style={styles.sectionHeaderText}>
+              <Text style={styles.sectionTitle}>Design</Text>
+              <Text style={styles.sectionSubtitle}>
+                Wähle dein bevorzugtes Farbschema
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.languageList}>
+            {THEME_OPTIONS.map((option) => {
+              const isSelected = userSettings.themeMode === option.mode;
+              return (
+                <TouchableOpacity
+                  key={option.mode}
+                  style={[
+                    styles.languageOption,
+                    isSelected && styles.languageOptionSelected,
+                  ]}
+                  onPress={() => changeTheme(option.mode)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.languageFlag}>{option.icon}</Text>
+                  <Text
+                    style={[
+                      styles.languageLabel,
+                      isSelected && styles.languageLabelSelected,
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                  {isSelected && (
+                    <View style={styles.checkmark}>
+                      <Text style={styles.checkmarkIcon}>✓</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
         {/* Platforms Section */}
         <UserPlatform onShowPlatformPicker={() => setShowPlatformPicker(true)}/>
 
@@ -176,10 +230,10 @@ export default function UserSettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f7fa',
+    backgroundColor: colors.primary,
   },
   header: {
     flexDirection: 'row',
@@ -187,26 +241,26 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.secondary,
     borderBottomWidth: 1,
-    borderBottomColor: '#e1e8ed',
+    borderBottomColor: colors.border,
   },
   backButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#f1f3f5',
+    backgroundColor: colors.tertiary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   backIcon: {
     fontSize: 24,
-    color: '#2c3e50',
+    color: colors.textPrimary,
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#2c3e50',
+    color: colors.textPrimary,
   },
   headerSpacer: {
     width: 40,
@@ -215,7 +269,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   section: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.secondary,
     marginTop: 20,
     paddingVertical: 24,
     paddingHorizontal: 20,
@@ -235,12 +289,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#2c3e50',
+    color: colors.textPrimary,
     marginBottom: 4,
   },
   sectionSubtitle: {
     fontSize: 14,
-    color: '#7f8c8d',
+    color: colors.textSecondary,
     lineHeight: 20,
   },
   languageList: {
@@ -250,14 +304,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: colors.tertiary,
     borderRadius: 12,
     borderWidth: 2,
     borderColor: 'transparent',
   },
   languageOptionSelected: {
-    backgroundColor: '#e8f4f8',
-    borderColor: '#3498db',
+    backgroundColor: colors.surfaceVariant,
+    borderColor: colors.accent,
   },
   languageFlag: {
     fontSize: 28,
@@ -267,17 +321,17 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     fontWeight: '600',
-    color: '#495057',
+    color: colors.textSecondary,
   },
   languageLabelSelected: {
-    color: '#2c3e50',
+    color: colors.textPrimary,
     fontWeight: '700',
   },
   checkmark: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#3498db',
+    backgroundColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -288,12 +342,12 @@ const styles = StyleSheet.create({
   },
   infoCard: {
     flexDirection: 'row',
-    backgroundColor: '#fff8e1',
+    backgroundColor: colors.tertiary,
     margin: 20,
     padding: 16,
     borderRadius: 12,
     borderLeftWidth: 4,
-    borderLeftColor: '#ffc107',
+    borderLeftColor: colors.warning,
   },
   infoIcon: {
     fontSize: 24,
@@ -305,12 +359,12 @@ const styles = StyleSheet.create({
   infoTitle: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#f57f17',
+    color: colors.warning,
     marginBottom: 4,
   },
   infoText: {
     fontSize: 14,
-    color: '#6d4c41',
+    color: colors.textSecondary,
     lineHeight: 20,
   },
   modalOverlay: {
@@ -322,14 +376,14 @@ const styles = StyleSheet.create({
   },
   modalBackdropTouchable: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: colors.overlay,
   },
   modalContainer: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.elevated,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '70%',
-    shadowColor: '#000',
+    shadowColor: colors.shadow,
     shadowOffset: {
       width: 0,
       height: -4,
@@ -344,24 +398,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#e1e8ed',
+    borderBottomColor: colors.border,
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#2c3e50',
+    color: colors.textPrimary,
   },
   modalClose: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#f1f3f5',
+    backgroundColor: colors.tertiary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   modalCloseIcon: {
     fontSize: 24,
-    color: '#495057',
+    color: colors.textSecondary,
     fontWeight: '600',
   },
   platformPickerList: {
@@ -379,16 +433,16 @@ const styles = StyleSheet.create({
   },
   platformPickerText: {
     fontSize: 16,
-    color: '#2c3e50',
+    color: colors.textPrimary,
     fontWeight: '500',
   },
   platformPickerSeparator: {
     height: 1,
-    backgroundColor: '#e1e8ed',
+    backgroundColor: colors.border,
     marginLeft: 56,
   },
   platformPickerScrollView: {
-    maxHeight: 400, // Feste Max-Höhe
+    maxHeight: 400,
   },
   noPlatformsContainer: {
     padding: 40,
@@ -400,7 +454,7 @@ const styles = StyleSheet.create({
   },
   noPlatformsText: {
     fontSize: 15,
-    color: '#7f8c8d',
+    color: colors.textSecondary,
     textAlign: 'center',
   }
 });

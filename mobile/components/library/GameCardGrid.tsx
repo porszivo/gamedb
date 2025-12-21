@@ -1,5 +1,7 @@
+import { useMemo } from 'react';
 import { Game } from '@/store/useGameStore';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useTheme } from '@/theme/useTheme';
 
 interface GameCardGridProps {
   game: Game;
@@ -8,6 +10,9 @@ interface GameCardGridProps {
   isFavorite?: boolean;
 }
 export function GameCardGrid({ game, onPress, onQuickAction, isFavorite = false }: GameCardGridProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
       {/* Cover Image */}
@@ -59,14 +64,14 @@ export function GameCardGrid({ game, onPress, onQuickAction, isFavorite = false 
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   card: {
     flex: 1,
     margin: 8,
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.secondary,
     borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: '#000',
+    shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
@@ -75,7 +80,7 @@ const styles = StyleSheet.create({
   coverContainer: {
     position: 'relative',
     aspectRatio: 0.7,
-    backgroundColor: '#e9ecef',
+    backgroundColor: colors.tertiary,
   },
   cover: {
     width: '100%',
@@ -85,7 +90,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f1f3f5',
+    backgroundColor: colors.tertiary,
   },
   placeholderIcon: {
     fontSize: 48,
@@ -130,12 +135,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#2c3e50',
+    color: colors.textPrimary,
     marginBottom: 4,
     lineHeight: 18,
   },
   platform: {
     fontSize: 12,
-    color: '#7f8c8d',
+    color: colors.textSecondary,
   },
 });

@@ -1,10 +1,20 @@
 import { Tabs } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTheme } from '@/theme/useTheme';
 
 export default function BottomTabsLayout() {
+  const { colors } = useTheme();
+
   return (
     <Tabs
-      screenOptions={{tabBarActiveTintColor: 'teal'}}
+      screenOptions={{
+        tabBarActiveTintColor: colors.accent,
+        tabBarInactiveTintColor: colors.textTertiary,
+        tabBarStyle: {
+          backgroundColor: colors.primary,
+          borderTopColor: colors.border,
+        },
+      }}
       backBehavior="order">
       <Tabs.Screen
         name="library"

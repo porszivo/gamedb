@@ -1,11 +1,15 @@
 import { Stack } from 'expo-router';
 import React from 'react';
 import {StatusBar} from 'expo-status-bar';
+import { ThemeProvider } from '@/theme/ThemeProvider';
+import { useTheme } from '@/theme/useTheme';
 
-export default function RootLayout() {
+function ThemedStack() {
+  const { isDark } = useTheme();
+
   return (
     <React.Fragment>
-      <StatusBar style="auto"/>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       <Stack
         initialRouteName="(tabs)"
         screenOptions={{
@@ -24,5 +28,13 @@ export default function RootLayout() {
         />
       </Stack>
     </React.Fragment>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <ThemedStack />
+    </ThemeProvider>
   );
 }

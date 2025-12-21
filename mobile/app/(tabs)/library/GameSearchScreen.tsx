@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { Picker } from '@react-native-picker/picker';
 import { getAllPlatforms, getPlatformLabel, IGDBPlatform } from '@/components/game/Platforms';
 import { useGameStore } from '@/store/useGameStore';
 import { useRouter } from 'expo-router';
+import { useTheme } from '@/theme/useTheme';
 
 export default function GameSearchScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const {control, handleSubmit, formState: {errors}} = useForm();
   const [selectedPlatform, setSelectedPlatform] = useState<IGDBPlatform | null>(null);
   const {isSearching, searchGames, error} = useGameStore();
@@ -47,7 +50,7 @@ export default function GameSearchScreen() {
                   onChangeText={onChange}
                   value={value}
                   placeholder="z.B. Super Mario Bros"
-                  placeholderTextColor="#999"
+                  placeholderTextColor={colors.textTertiary}
                   autoCapitalize="none"
                   clearButtonMode="while-editing"
                 />
@@ -116,10 +119,10 @@ export default function GameSearchScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f7fa',
+    backgroundColor: colors.primary,
   },
   scrollContent: {
     paddingHorizontal: 20,
@@ -133,19 +136,19 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#2c3e50',
+    color: colors.textPrimary,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#7f8c8d',
+    color: colors.textSecondary,
     textAlign: 'center',
   },
   form: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.secondary,
     borderRadius: 16,
     padding: 24,
-    shadowColor: '#000',
+    shadowColor: colors.shadow,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -161,52 +164,52 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#34495e',
+    color: colors.textPrimary,
     marginBottom: 8,
   },
   textInput: {
     borderWidth: 2,
-    borderColor: '#e1e8ed',
+    borderColor: colors.border,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
-    backgroundColor: '#ffffff',
-    color: '#2c3e50',
+    backgroundColor: colors.tertiary,
+    color: colors.textPrimary,
   },
   textInputError: {
-    borderColor: '#e74c3c',
+    borderColor: colors.error,
   },
   errorText: {
-    color: '#e74c3c',
+    color: colors.error,
     fontSize: 14,
     marginTop: 6,
     fontWeight: '500',
   },
   pickerContainer: {
     borderWidth: 2,
-    borderColor: '#e1e8ed',
+    borderColor: colors.border,
     borderRadius: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.tertiary,
     overflow: 'hidden',
   },
   picker: {
-    height: 100, // Mehr Höhe für iOS
-    color: '#2c3e50',
+    height: 100,
+    color: colors.textPrimary,
   },
   pickerItem: {
-    height: 100, // iOS-spezifische Höhe für Items
+    height: 100,
     fontSize: 16,
   },
   submitButton: {
-    backgroundColor: '#3498db',
+    backgroundColor: colors.accent,
     borderRadius: 12,
     paddingVertical: 16,
     paddingHorizontal: 24,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 10,
-    shadowColor: '#3498db',
+    shadowColor: colors.accent,
     shadowOffset: {
       width: 0,
       height: 4,
@@ -216,7 +219,7 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   submitButtonDisabled: {
-    backgroundColor: '#bdc3c7',
+    backgroundColor: colors.textTertiary,
     shadowOpacity: 0,
     elevation: 0,
   },
@@ -226,21 +229,21 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   infoCard: {
-    backgroundColor: '#e8f6f3',
+    backgroundColor: colors.tertiary,
     borderRadius: 12,
     padding: 20,
     borderLeftWidth: 4,
-    borderLeftColor: '#1abc9c',
+    borderLeftColor: colors.success,
   },
   infoTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#16a085',
+    color: colors.success,
     marginBottom: 10,
   },
   infoText: {
     fontSize: 14,
-    color: '#2c3e50',
+    color: colors.textSecondary,
     lineHeight: 20,
   },
 });

@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { FlatList, SafeAreaView, StyleSheet, View } from 'react-native';
 import { GameCardGrid } from '@/components/library/GameCardGrid';
 import { GameCardList } from '@/components/library/GameCardList';
@@ -7,11 +8,13 @@ import { FloatingActionButton } from '@/components/library/FloatingActionButton'
 import { useState } from 'react';
 import { useGameStore } from '@/store/useGameStore';
 import { useRouter } from 'expo-router';
+import { useTheme } from '@/theme/useTheme';
 
 const FILTER_OPTIONS = ['Alle', 'Favoriten', 'Kürzlich hinzugefügt'];
 
 export default function GameLibraryScreen() {
-
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const router = useRouter();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -80,10 +83,10 @@ export default function GameLibraryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f7fa',
+    backgroundColor: colors.primary,
   },
   gridContainer: {
     padding: 16,
