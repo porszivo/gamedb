@@ -3,6 +3,7 @@ import React from 'react';
 import {StatusBar} from 'expo-status-bar';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { useTheme } from '@/theme/useTheme';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 function ThemedStack() {
   const { isDark } = useTheme();
@@ -33,8 +34,10 @@ function ThemedStack() {
 
 export default function RootLayout() {
   return (
-    <ThemeProvider>
-      <ThemedStack />
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <ThemedStack />
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }

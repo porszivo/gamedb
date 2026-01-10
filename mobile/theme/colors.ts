@@ -2,23 +2,23 @@ import { ColorPalette } from './types';
 
 export const DARK_COLORS: ColorPalette = {
   // Backgrounds
-  primary: '#121212',
-  secondary: '#1E1E1E',
-  tertiary: '#2C2C2C',
-  elevated: '#383838',
-  surface: '#252525',
-  surfaceVariant: '#323232',
+  primary: '#1C1C1E',
+  secondary: '#2C2C2E',
+  tertiary: '#3A3A3C',
+  elevated: '#2C2C2E',
+  surface: '#1C1C1E',
+  surfaceVariant: '#2C2C2E',
 
   // Text
   textPrimary: '#FFFFFF',
-  textSecondary: '#B0B0B0',
-  textTertiary: '#808080',
-  textDisabled: '#606060',
+  textSecondary: '#8E8E93',
+  textTertiary: '#636366',
+  textDisabled: '#48484A',
 
   // Accents
-  accent: '#60A5FA',
-  accentHover: '#3B82F6',
-  accentPressed: '#2563EB',
+  accent: '#007AFF',
+  accentHover: '#0051D5',
+  accentPressed: '#003D99',
 
   // Semantic
   success: '#34D399',
@@ -27,41 +27,41 @@ export const DARK_COLORS: ColorPalette = {
   info: '#60A5FA',
 
   // Structure
-  border: '#404040',
-  borderLight: '#333333',
-  divider: '#2A2A2A',
+  border: '#38383A',
+  borderLight: '#48484A',
+  divider: '#2C2C2E',
 
   // Special
-  overlay: 'rgba(0, 0, 0, 0.7)',
-  ripple: 'rgba(96, 165, 250, 0.15)',
-  shadow: 'rgba(0, 0, 0, 0.4)',
+  overlay: 'rgba(0, 0, 0, 0.5)',
+  ripple: 'rgba(0, 122, 255, 0.15)',
+  shadow: 'rgba(0, 0, 0, 0.3)',
 
   // Component-specific
-  genreTagBg: '#2C3E50',
-  genreTagBorder: '#34495E',
-  genreTagText: '#60A5FA',
-  platformBg: '#2A2A2A',
+  genreTagBg: '#2C2C2E',
+  genreTagBorder: '#38383A',
+  genreTagText: '#007AFF',
+  platformBg: '#2C2C2E',
 };
 
 export const LIGHT_COLORS: ColorPalette = {
   // Backgrounds
   primary: '#FFFFFF',
-  secondary: '#F8F9FA',
-  tertiary: '#F1F3F5',
+  secondary: '#F2F2F7',
+  tertiary: '#E5E5EA',
   elevated: '#FFFFFF',
-  surface: '#FAFBFC',
-  surfaceVariant: '#E9ECEF',
+  surface: '#FFFFFF',
+  surfaceVariant: '#F2F2F7',
 
   // Text
-  textPrimary: '#1A1A2E',
-  textSecondary: '#495057',
-  textTertiary: '#6C757D',
-  textDisabled: '#ADB5BD',
+  textPrimary: '#000000',
+  textSecondary: '#8E8E93',
+  textTertiary: '#AEAEB2',
+  textDisabled: '#C7C7CC',
 
   // Accents
-  accent: '#3498DB',
-  accentHover: '#2980B9',
-  accentPressed: '#1F6AA5',
+  accent: '#007AFF',
+  accentHover: '#0051D5',
+  accentPressed: '#003D99',
 
   // Semantic
   success: '#10B981',
@@ -70,18 +70,18 @@ export const LIGHT_COLORS: ColorPalette = {
   info: '#3498DB',
 
   // Structure
-  border: '#DEE2E6',
-  borderLight: '#E9ECEF',
-  divider: '#E1E8ED',
+  border: '#D1D1D6',
+  borderLight: '#E5E5EA',
+  divider: '#C6C6C8',
 
   // Special
-  overlay: 'rgba(0, 0, 0, 0.5)',
-  ripple: 'rgba(52, 152, 219, 0.1)',
-  shadow: 'rgba(0, 0, 0, 0.12)',
+  overlay: 'rgba(0, 0, 0, 0.3)',
+  ripple: 'rgba(0, 122, 255, 0.1)',
+  shadow: 'rgba(0, 0, 0, 0.1)',
 
   // Component-specific
-  genreTagBg: '#E8F4F8',
-  genreTagBorder: '#C2E0EC',
-  genreTagText: '#2C7A9E',
-  platformBg: '#F8F9FA',
+  genreTagBg: '#F2F2F7',
+  genreTagBorder: '#D1D1D6',
+  genreTagText: '#007AFF',
+  platformBg: '#F2F2F7',
 };

@@ -1,0 +1,45 @@
+# Test: Library Search expandieren
+# Testet den expandierbaren Such-Button im Library Header
+---
+appId: host.exp.Exponent
+name: Library Search Expand and Collapse
+tags:
+  - ui
+  - search
+  - library
+
+---
+# App starten
+- launchApp
+
+# Warte auf die Bibliothek
+- assertVisible: "Meine Bibliothek"
+
+# Klicke auf den Such-Toggle-Button
+- tapOn:
+    id: "search-toggle-button"
+
+# Verifiziere, dass das Suchfeld erscheint
+- assertVisible:
+    id: "library-search-input"
+
+# Gib Text ins Suchfeld ein
+- tapOn:
+    id: "library-search-input"
+- inputText: "Zelda"
+
+# Verifiziere, dass der Clear-Button erscheint
+- assertVisible:
+    id: "search-clear-button"
+
+# Klicke auf Clear Button
+- tapOn:
+    id: "search-clear-button"
+
+# Schließe das Suchfeld wieder
+- tapOn:
+    id: "search-toggle-button"
+
+# Verifiziere, dass das Suchfeld ausgeblendet ist
+- assertNotVisible:
+    id: "library-search-input"

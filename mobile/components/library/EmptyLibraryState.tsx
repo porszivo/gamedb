@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/theme/useTheme';
+import { ColorPalette } from '@/theme/types';
+import { borderRadius, spacing, shadows } from '@/theme/tokens';
 
 interface EmptyLibraryStateProps {
   onAddGames: () => void;
@@ -11,58 +13,63 @@ export function EmptyLibraryState({ onAddGames }: EmptyLibraryStateProps) {
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (
-    <View style={styles.container}>
+    <View testID="empty-library-state" style={styles.container}>
       <Text style={styles.icon}>🎮</Text>
-      <Text style={styles.title}>Deine Bibliothek ist leer</Text>
+      <Text style={styles.title}>No Games Yet</Text>
       <Text style={styles.text}>
-        Beginne mit der Suche nach Spielen und füge sie zu deiner Sammlung hinzu
+        Start building your collection by adding games to your library
       </Text>
-      <TouchableOpacity style={styles.button} onPress={onAddGames}>
-        <Text style={styles.buttonText}>Spiele durchsuchen</Text>
+      <TouchableOpacity
+        testID="empty-state-add-games-button"
+        style={styles.button}
+        onPress={onAddGames}
+        accessibilityLabel="Spiele durchsuchen"
+        accessibilityRole="button"
+        accessibilityHint="Doppeltippen um zur Spielesuche zu gelangen"
+      >
+        <Text style={styles.buttonText}>Add Games</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: ColorPalette) => StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 40,
+    backgroundColor: colors.primary,
   },
   icon: {
-    fontSize: 80,
-    marginBottom: 20,
+    fontSize: 64,
+    marginBottom: spacing.xl,
   },
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '700',
     color: colors.textPrimary,
-    marginBottom: 12,
+    marginBottom: spacing.md,
     textAlign: 'center',
   },
   text: {
     fontSize: 16,
     color: colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 32,
+    lineHeight: 22,
+    marginBottom: spacing.xxxl,
+    fontWeight: '400',
   },
   button: {
     backgroundColor: colors.accent,
     paddingHorizontal: 32,
     paddingVertical: 14,
-    borderRadius: 12,
-    shadowColor: colors.accent,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+    borderRadius: borderRadius.md,
+    ...shadows.md,
   },
   buttonText: {
-    color: '#ffffff',
+    color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '600',
   },
 });

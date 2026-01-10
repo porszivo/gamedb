@@ -4,6 +4,7 @@ import { getPlatformLabel, IGDBPlatform } from '@/components/game/Platforms';
 import React from 'react';
 import { useUserStore } from '@/store/useUserStore';
 import { useTheme } from '@/theme/useTheme';
+import { ColorPalette } from '@/theme/types';
 
 type UserPlatformProps = {
   onShowPlatformPicker: () => void;
@@ -96,7 +97,7 @@ export default function UserPlatform({onShowPlatformPicker}: UserPlatformProps) 
   );
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: ColorPalette) => StyleSheet.create({
   section: {
     backgroundColor: colors.secondary,
     marginTop: 20,

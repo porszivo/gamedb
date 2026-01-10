@@ -50,10 +50,13 @@ class IGDBService {
       search "${searchTerm}";
       where game_type = 0
     `;
+
     if (platform) {
-      query += `& platforms.name ~ *"${platform}"`;
+      query += `& platforms = (${platform})`;
     }
     query += '; limit 20;';
+
+    console.log(query);
     try {
       const games: IGDBGame[] = await this.makeIGDBRequest('games', query);
 

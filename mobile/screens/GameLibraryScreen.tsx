@@ -9,8 +9,7 @@ import { useState } from 'react';
 import { useGameStore } from '@/store/useGameStore';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/theme/useTheme';
-
-const FILTER_OPTIONS = ['Alle', 'Favoriten', 'Kürzlich hinzugefügt'];
+import { ColorPalette } from '@/theme/types';
 
 export default function GameLibraryScreen() {
   const { colors } = useTheme();
@@ -18,20 +17,15 @@ export default function GameLibraryScreen() {
   const router = useRouter();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState('Alle');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const {userLibrary} = useGameStore();
 
   const handleGamePress = (gameId: number) => {
-    console.log('Game pressed:', gameId);
-  };
-
-  const handleQuickAction = (gameId: number) => {
-    console.log('Quick action:', gameId);
+    router.push(`/GameDetailScreen?id=${gameId}`);
   };
 
   const handleAddGames = () => {
-    router.push('library/GameSearchScreen')
+    router.push('/(tabs)/library/GameSearchScreen')
   };
 
   return (
@@ -42,9 +36,6 @@ export default function GameLibraryScreen() {
         onViewModeChange={setViewMode}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        selectedFilter={selectedFilter}
-        filterOptions={FILTER_OPTIONS}
-        onFilterChange={setSelectedFilter}
       />
 
       {userLibrary.length === 0 ? (
@@ -57,13 +48,11 @@ export default function GameLibraryScreen() {
               <GameCardGrid
                 game={item}
                 onPress={() => handleGamePress(item.id)}
-                onQuickAction={() => handleQuickAction(item.id)}
               />
             ) : (
               <GameCardList
                 game={item}
                 onPress={() => handleGamePress(item.id)}
-                onActionPress={() => handleQuickAction(item.id)}
               />
             )
           }
@@ -71,9 +60,6 @@ export default function GameLibraryScreen() {
           numColumns={viewMode === 'grid' ? 2 : 1}
           key={viewMode}
           contentContainerStyle={viewMode === 'grid' ? styles.gridContainer : styles.listContainer}
-          ItemSeparatorComponent={
-            viewMode === 'list' ? () => <View style={styles.listSeparator}/> : undefined
-          }
           showsVerticalScrollIndicator={false}
         />
       )}
@@ -83,16 +69,19 @@ export default function GameLibraryScreen() {
   );
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: ColorPalette) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.primary,
   },
   gridContainer: {
-    padding: 16,
+    paddingHorizontal: 8,
+    paddingTop: 8,
+    paddingBottom: 100, // Space for floating tab bar
   },
   listContainer: {
     padding: 16,
+    paddingBottom: 100, // Space for floating tab bar
   },
   listSeparator: {
     height: 12,

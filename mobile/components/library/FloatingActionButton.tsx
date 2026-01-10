@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/theme/useTheme';
+import { ColorPalette } from '@/theme/types';
+import { shadows } from '@/theme/tokens';
 
 interface FloatingActionButtonProps {
   onPress: () => void;
@@ -11,16 +13,24 @@ export function FloatingActionButton({ onPress }: FloatingActionButtonProps) {
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (
-    <TouchableOpacity style={styles.fab} onPress={onPress} activeOpacity={0.8}>
+    <TouchableOpacity
+      testID="fab-add-games"
+      style={styles.fab}
+      onPress={onPress}
+      activeOpacity={0.8}
+      accessibilityLabel="Spiele hinzufügen"
+      accessibilityRole="button"
+      accessibilityHint="Doppeltippen um zur Spielesuche zu gelangen"
+    >
       <Text style={styles.fabIcon}>+</Text>
     </TouchableOpacity>
   );
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: ColorPalette) => StyleSheet.create({
   fab: {
     position: 'absolute',
-    bottom: 24,
+    bottom: 100,
     right: 24,
     width: 60,
     height: 60,
@@ -28,15 +38,11 @@ const createStyles = (colors: any) => StyleSheet.create({
     backgroundColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.accent,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 8,
+    ...shadows.lg,
   },
   fabIcon: {
-    fontSize: 28,
-    color: '#ffffff',
-    fontWeight: '600',
+    fontSize: 32,
+    color: '#FFFFFF',
+    fontWeight: '300',
   },
 });

@@ -6,6 +6,7 @@ import { getAllPlatforms, getPlatformLabel, IGDBPlatform } from '@/components/ga
 import { useGameStore } from '@/store/useGameStore';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/theme/useTheme';
+import { ColorPalette } from '@/theme/types';
 
 export default function GameSearchScreen() {
   const { colors } = useTheme();
@@ -16,7 +17,7 @@ export default function GameSearchScreen() {
   const router = useRouter();
 
   const onSubmit = async (data: any) => {
-    const results = await searchGames(data.gamename, selectedPlatform ? getPlatformLabel(selectedPlatform) : undefined);
+    const results = await searchGames(data.gamename, selectedPlatform ? selectedPlatform.toString() : undefined);
     if (results.length > 0) router.navigate('/SearchResults');
   };
 
@@ -24,8 +25,8 @@ export default function GameSearchScreen() {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <Text style={styles.title}>🎮 Spiele Suche</Text>
-          <Text style={styles.subtitle}>Finde deine Lieblingsspiele</Text>
+          <Text style={styles.title}>Add Game</Text>
+          <Text style={styles.subtitle}>Search for games to add to your library</Text>
         </View>
         <View style={styles.form}>
           {/* Spielname Input */}
@@ -43,6 +44,7 @@ export default function GameSearchScreen() {
               }}
               render={({field: {onChange, value}}) => (
                 <TextInput
+                  testID="game-search-input"
                   style={[
                     styles.textInput,
                     errors.gamename && styles.textInputError
@@ -53,6 +55,8 @@ export default function GameSearchScreen() {
                   placeholderTextColor={colors.textTertiary}
                   autoCapitalize="none"
                   clearButtonMode="while-editing"
+                  accessibilityLabel="Spielname Eingabefeld"
+                  accessibilityHint="Gib den Namen des Spiels ein, das du suchen möchtest"
                 />
               )}
             />
@@ -91,6 +95,7 @@ export default function GameSearchScreen() {
 
           {/* Submit Button */}
           <TouchableOpacity
+            testID="search-submit-button"
             style={[
               styles.submitButton,
               isSearching && styles.submitButtonDisabled
@@ -98,6 +103,10 @@ export default function GameSearchScreen() {
             onPress={handleSubmit(onSubmit)}
             disabled={isSearching}
             activeOpacity={0.8}
+            accessibilityLabel="Spiele suchen"
+            accessibilityRole="button"
+            accessibilityHint="Doppeltippen um die Suche zu starten"
+            accessibilityState={{ disabled: isSearching }}
           >
             <Text style={styles.submitButtonText}>
               {isSearching ? '🔍 Suche läuft...' : '🚀 Spiele suchen'}
@@ -119,7 +128,7 @@ export default function GameSearchScreen() {
   );
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: ColorPalette) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.primary,
@@ -134,8 +143,8 @@ const createStyles = (colors: any) => StyleSheet.create({
     marginBottom: 30,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: 32,
+    fontWeight: '700',
     color: colors.textPrimary,
     marginBottom: 8,
   },
@@ -143,19 +152,12 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 16,
     color: colors.textSecondary,
     textAlign: 'center',
+    fontWeight: '400',
   },
   form: {
     backgroundColor: colors.secondary,
-    borderRadius: 16,
+    borderRadius: 12,
     padding: 24,
-    shadowColor: colors.shadow,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
     marginBottom: 20,
   },
   inputContainer: {
@@ -209,31 +211,22 @@ const createStyles = (colors: any) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 10,
-    shadowColor: colors.accent,
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
   },
   submitButtonDisabled: {
     backgroundColor: colors.textTertiary,
-    shadowOpacity: 0,
-    elevation: 0,
+    opacity: 0.6,
   },
   submitButtonText: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '700',
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
   infoCard: {
     backgroundColor: colors.tertiary,
     borderRadius: 12,
     padding: 20,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.success,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   infoTitle: {
     fontSize: 16,

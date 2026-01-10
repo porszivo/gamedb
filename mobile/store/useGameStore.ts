@@ -27,6 +27,7 @@ interface GameStore {
   removeFromFavorites: (gameId: number) => void;
   clearSearchResults: () => void;
   setError: (error: string | null) => void;
+  clearError: () => void;
 }
 
 export const useGameStore = create<GameStore>()(
@@ -77,7 +78,8 @@ export const useGameStore = create<GameStore>()(
       clearSearchResults: () => {
         set({searchResults: []});
       },
-      setError: (error: string | null) => set({error})
+      setError: (error: string | null) => set({error}),
+      clearError: () => set({error: null})
     }),
     {
       name: 'game-store',

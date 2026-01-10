@@ -2,19 +2,40 @@ import { useMemo } from 'react';
 import { Game } from '@/store/useGameStore';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '@/theme/useTheme';
+import { ColorPalette } from '@/theme/types';
+import { borderRadius, spacing, shadows } from '@/theme/tokens';
+import { getPlatformColor, getPlatformShortName, normalizePlatformName } from '@/components/game/Platforms';
 
 interface GameCardGridProps {
   game: Game;
   onPress: () => void;
-  onQuickAction?: () => void;
-  isFavorite?: boolean;
 }
-export function GameCardGrid({ game, onPress, onQuickAction, isFavorite = false }: GameCardGridProps) {
+
+export function GameCardGrid({ game, onPress }: GameCardGridProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
+  // Normalize and deduplicate platforms
+  const normalizedPlatforms = useMemo(() => {
+    const uniquePlatforms = new Map<string, string>();
+    game.platforms.forEach(platform => {
+      const normalized = normalizePlatformName(platform);
+      if (!uniquePlatforms.has(normalized)) {
+        uniquePlatforms.set(normalized, platform);
+      }
+    });
+    return Array.from(uniquePlatforms.values());
+  }, [game.platforms]);
+
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
+    <TouchableOpacity
+      style={styles.card}
+      onPress={onPress}
+      activeOpacity={0.7}
+      accessibilityLabel={`${game.name}${game.platforms?.length > 0 ? `, verfügbar auf ${game.platforms.join(', ')}` : ''}`}
+      accessibilityRole="button"
+      accessibilityHint="Doppeltippen um Details anzuzeigen"
+    >
       {/* Cover Image */}
       <View style={styles.coverContainer}>
         {game.coverUrl ? (
@@ -24,28 +45,6 @@ export function GameCardGrid({ game, onPress, onQuickAction, isFavorite = false 
             <Text style={styles.placeholderIcon}>🎮</Text>
           </View>
         )}
-
-        {/* Favorite Badge */}
-        {isFavorite && (
-          <View style={styles.favoriteBadge}>
-            <Text style={styles.favoriteBadgeIcon}>⭐</Text>
-          </View>
-        )}
-
-        {/* Quick Actions Overlay */}
-        {onQuickAction && (
-          <View style={styles.quickActionsOverlay}>
-            <TouchableOpacity
-              style={styles.quickActionButton}
-              onPress={(e) => {
-                e.stopPropagation();
-                onQuickAction();
-              }}
-            >
-              <Text style={styles.quickActionIcon}>▶</Text>
-            </TouchableOpacity>
-          </View>
-        )}
       </View>
 
       {/* Game Info */}
@@ -53,32 +52,43 @@ export function GameCardGrid({ game, onPress, onQuickAction, isFavorite = false 
         <Text style={styles.title} numberOfLines={2}>
           {game.name}
         </Text>
-        {game.platforms.length > 0 && (
-          <Text style={styles.platform} numberOfLines={1}>
-            {game.platforms[0]}
-            {game.platforms.length > 1 && ` +${game.platforms.length - 1}`}
-          </Text>
+        {normalizedPlatforms.length > 0 && (
+          <View style={styles.platformContainer}>
+            {normalizedPlatforms.slice(0, 2).map((platform, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.platformBadge,
+                  { backgroundColor: getPlatformColor(platform) }
+                ]}
+              >
+                <Text style={styles.platformText}>
+                  {getPlatformShortName(platform)}
+                </Text>
+              </View>
+            ))}
+            {normalizedPlatforms.length > 2 && (
+              <Text style={styles.platformMore}>+{normalizedPlatforms.length - 2}</Text>
+            )}
+          </View>
         )}
       </View>
     </TouchableOpacity>
   );
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: ColorPalette) => StyleSheet.create({
   card: {
     flex: 1,
-    margin: 8,
+    maxWidth: '48%',
+    margin: '1%',
     backgroundColor: colors.secondary,
-    borderRadius: 16,
+    borderRadius: borderRadius.lg,
     overflow: 'hidden',
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 4,
+    ...shadows.md,
   },
   coverContainer: {
-    position: 'relative',
+    width: '100%',
     aspectRatio: 0.7,
     backgroundColor: colors.tertiary,
   },
@@ -95,52 +105,39 @@ const createStyles = (colors: any) => StyleSheet.create({
   placeholderIcon: {
     fontSize: 48,
   },
-  favoriteBadge: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    borderRadius: 20,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+  info: {
+    padding: spacing.md,
+    backgroundColor: colors.secondary,
   },
-  favoriteBadgeIcon: {
-    fontSize: 14,
+  title: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.textPrimary,
+    marginBottom: 8,
+    lineHeight: 20,
   },
-  quickActionsOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    paddingVertical: 8,
+  platformContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
-    opacity: 0.9,
+    gap: 6,
+    flexWrap: 'wrap',
   },
-  quickActionButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+  platformBadge: {
+    minWidth: 32,
+    height: 32,
+    paddingHorizontal: 6,
+    borderRadius: 6,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  quickActionIcon: {
-    fontSize: 14,
-    color: '#2c3e50',
-  },
-  info: {
-    padding: 12,
-  },
-  title: {
-    fontSize: 14,
+  platformText: {
+    fontSize: 10,
     fontWeight: '700',
-    color: colors.textPrimary,
-    marginBottom: 4,
-    lineHeight: 18,
+    color: '#FFFFFF',
   },
-  platform: {
-    fontSize: 12,
-    color: colors.textSecondary,
+  platformMore: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.textTertiary,
   },
 });

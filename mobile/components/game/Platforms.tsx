@@ -1,3 +1,5 @@
+import { platform } from 'node:os';
+
 export enum IGDBPlatform {
   PC = 6,
   PLAYSTATION_5 = 167,
@@ -64,8 +66,7 @@ export const getPlatformLabel = (platform: IGDBPlatform): string => {
 };
 
 export const getAllPlatforms = (): IGDBPlatform[] => {
-  const bla = Object.values(IGDBPlatform).filter(v => typeof v === 'number') as IGDBPlatform[];
-  return bla;
+  return Object.values(IGDBPlatform).filter(v => typeof v === 'number') as IGDBPlatform[];
 };
 
 // Type for search query
@@ -73,3 +74,115 @@ export interface GameSearchQuery {
   gameName: string;
   platform?: IGDBPlatform;
 }
+
+// Platform brand colors
+export const getPlatformColor = (platformName: string): string => {
+  const name = normalizePlatformName(platformName).toLowerCase();
+
+  // Sony PlayStation - Blue
+  if (name.includes('playstation') || name.includes('ps vita')) {
+    return '#0070CC';
+  }
+
+  // Nintendo - Red
+  if (name.includes('nintendo') || name.includes('switch') || name.includes('wii') ||
+      name.includes('game boy') || name.includes('nes') || name.includes('snes')) {
+    return '#E60012';
+  }
+
+  // Xbox - Green
+  if (name.includes('xbox')) {
+    return '#107C10';
+  }
+
+  // Sega - Blue
+  if (name.includes('sega') || name.includes('dreamcast') || name.includes('genesis') || name.includes('saturn')) {
+    return '#0089CF';
+  }
+
+  // Atari - Orange
+  if (name.includes('atari')) {
+    return '#FF6B35';
+  }
+
+  // Neo Geo - Yellow/Orange
+  if (name.includes('neo geo')) {
+    return '#FFA500';
+  }
+
+  // Default - Gray
+  return '#9CA3AF';
+};
+
+// Normalize platform names (combine regional variants)
+export const normalizePlatformName = (platformName: string): string => {
+  const name = platformName.toLowerCase();
+
+  // SNES = Super Nintendo = Super Famicom
+  if (name.includes('super nintendo') || name.includes('super famicom') || name.includes('snes')) {
+    return 'Super Nintendo';
+  }
+
+  // NES = Famicom
+  if (name.includes('nes') && !name.includes('super') && !name.includes('64') || name === 'famicom') {
+    return 'NES';
+  }
+
+  // Genesis = Mega Drive
+  if (name.includes('genesis') || name.includes('mega drive')) {
+    return 'Genesis';
+  }
+
+  // Return original name for others
+  return platformName;
+};
+
+// Platform short names for badges
+export const getPlatformShortName = (platformName: string): string => {
+  const name = normalizePlatformName(platformName).toLowerCase();
+
+  // PlayStation
+  if (name.includes('playstation 5')) return 'PS5';
+  if (name.includes('playstation 4')) return 'PS4';
+  if (name.includes('playstation 3')) return 'PS3';
+  if (name.includes('playstation 2')) return 'PS2';
+  if (name === 'playstation' || name.includes('playstation 1')) return 'PSX';
+  if (name.includes('ps vita')) return 'VITA';
+
+  // Xbox
+  if (name.includes('xbox series')) return 'XSX';
+  if (name.includes('xbox one')) return 'XB1';
+  if (name.includes('xbox 360')) return '360';
+  if (name.includes('xbox')) return 'XB';
+
+  // Nintendo Modern
+  if (name.includes('switch')) return 'NSW';
+  if (name.includes('wii u')) return 'WiiU';
+  if (name.includes('wii') && !name.includes('u')) return 'Wii';
+  if (name.includes('gamecube')) return 'NGC';
+  if (name.includes('new nintendo 3ds') || name.includes('n3ds')) return 'N3DS';
+  if (name.includes('3ds')) return '3DS';
+
+  // Nintendo Classic
+  if (name.includes('nintendo 64') || name.includes('n64')) return 'N64';
+  if (name.includes('super nintendo') || name.includes('snes') || name.includes('super famicom')) return 'SNES';
+  if (name.includes('nes') && !name.includes('super') && !name.includes('64')) return 'NES';
+  if (name.includes('game boy advance') || name.includes('gba')) return 'GBA';
+  if (name.includes('game boy color') || name.includes('gbc')) return 'GBC';
+  if (name.includes('game boy') || name.includes('gb')) return 'GB';
+
+  // Sega
+  if (name.includes('dreamcast')) return 'DC';
+  if (name.includes('genesis') || name.includes('mega drive')) return 'GEN';
+  if (name.includes('saturn')) return 'SAT';
+
+  // PC
+  if (name.includes('pc')) return 'PC';
+
+  // Others
+  if (name.includes('atari')) return '2600';
+  if (name.includes('neo geo')) return 'NG';
+
+  // Default: first 3-4 chars uppercase
+  return platformName.substring(0, 4).toUpperCase();
+};

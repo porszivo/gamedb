@@ -1,0 +1,7 @@
+# Maestro Configuration for RetroLibrary
+appId: host.exp.Exponent
+name: RetroLibrary E2E Tests
+tags:
+  - mobile
+  - e2e
+  - expo

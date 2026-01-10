@@ -8,14 +8,19 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Game, useGameStore } from '@/store/useGameStore';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { router } from 'expo-router';
 import GameCard from '@/components/game/GameCard';
+import { useTheme } from '@/theme/useTheme';
+import { spacing, borderRadius, fontSize, fontWeight, shadows } from '@/theme/tokens';
+import { ColorPalette } from '@/theme/types';
 
 export default function SearchResults() {
-
-  const {searchResults, isSearching, addToLibrary} = useGameStore();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { searchResults, isSearching, addToLibrary, error, clearError } = useGameStore();
 
   const handleAddToLibrary = (game: Game) => {
     addToLibrary(game);
@@ -30,8 +35,12 @@ export default function SearchResults() {
   };
 
   const renderGameCard = ({item}: { item: Game }) => (
-    <GameCard game={item} onPress={() => console.log('pressed')} onAddToLibrary={() => handleAddToLibrary(item)}
-              showAddButton={true}/>
+    <GameCard
+      game={item}
+      onPress={() => router.push(`/GameDetailScreen?id=${item.id}`)}
+      onAddToLibrary={() => handleAddToLibrary(item)}
+      showAddButton={true}
+    />
   );
 
   const renderEmptyState = () => (
@@ -44,8 +53,31 @@ export default function SearchResults() {
       <TouchableOpacity
         style={styles.backButton}
         onPress={() => router.back()}
+        accessibilityLabel="Zurück zur Suche"
+        accessibilityRole="button"
       >
         <Text style={styles.backButtonText}>← Neue Suche</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderErrorState = () => (
+    <View style={styles.emptyState}>
+      <Text style={styles.emptyStateIcon}>⚠️</Text>
+      <Text style={styles.emptyStateTitle}>Fehler beim Laden</Text>
+      <Text style={styles.emptyStateText}>
+        {error || 'Es ist ein unerwarteter Fehler aufgetreten'}
+      </Text>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => {
+          clearError();
+          router.back();
+        }}
+        accessibilityLabel="Zurück und erneut versuchen"
+        accessibilityRole="button"
+      >
+        <Text style={styles.backButtonText}>← Erneut versuchen</Text>
       </TouchableOpacity>
     </View>
   );
@@ -56,32 +88,38 @@ export default function SearchResults() {
         onPress={() => router.back()}
         style={styles.backIconButton}
         hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
+        accessibilityLabel="Zurück"
+        accessibilityRole="button"
       >
-        <Text style={styles.backIcon}>←</Text>
+        <MaterialCommunityIcons
+          name="arrow-left"
+          size={24}
+          color={colors.textPrimary}
+        />
       </TouchableOpacity>
+      <View style={styles.headerTextContainer}>
+        <Text style={styles.headerTitle}>Search Results</Text>
+        {searchResults.length > 0 && !isSearching && (
+          <Text style={styles.headerSubtitle}>
+            {searchResults.length} {searchResults.length === 1 ? 'game' : 'games'} found
+          </Text>
+        )}
+      </View>
     </View>
   );
 
   return (
     <SafeAreaView style={styles.container}>
       {renderHeader()}
-      {/* Results Count */}
-      {!isSearching && searchResults.length > 0 && (
-        <View style={styles.resultsCountContainer}>
-          <View style={styles.resultsCountBadge}>
-            <Text style={styles.resultsCountText}>
-              {searchResults.length} {searchResults.length === 1 ? 'Spiel' : 'Spiele'} gefunden
-            </Text>
-          </View>
-        </View>
-      )}
 
       {/* Content */}
       {isSearching ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#3498db"/>
+          <ActivityIndicator size="large" color={colors.accent}/>
           <Text style={styles.loadingText}>Suche läuft...</Text>
         </View>
+      ) : error ? (
+        renderErrorState()
       ) : searchResults.length === 0 ? (
         renderEmptyState()
       ) : (
@@ -98,177 +136,135 @@ export default function SearchResults() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ColorPalette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f7fa',
+    backgroundColor: colors.primary,
   },
   headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: '#ffffff',
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.lg,
+    backgroundColor: colors.primary,
     borderBottomWidth: 1,
-    borderBottomColor: '#e1e8ed',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 3,
+    borderBottomColor: colors.border,
   },
   backIconButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: '#f1f3f5',
+    borderRadius: borderRadius.sm,
+    backgroundColor: colors.tertiary,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
-  },
-  backIcon: {
-    fontSize: 24,
-    color: '#2c3e50',
+    marginRight: spacing.md,
   },
   headerTextContainer: {
     flex: 1,
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#2c3e50',
+    fontSize: 28,
+    fontWeight: '700',
+    color: colors.textPrimary,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#7f8c8d',
-    marginTop: 2,
-  },
-  resultsCountContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    backgroundColor: '#ffffff',
-  },
-  resultsCountBadge: {
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    backgroundColor: '#e8f6f3',
-    borderRadius: 20,
-    alignSelf: 'flex-start',
-  },
-  resultsCountText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#16a085',
+    color: colors.textSecondary,
+    marginTop: 4,
+    fontWeight: '400',
   },
   listContent: {
-    padding: 20,
+    padding: spacing.xl,
   },
   separator: {
-    height: 16,
+    height: spacing.lg,
   },
   gameCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 4,
+    backgroundColor: colors.secondary,
+    borderRadius: borderRadius.xl,
+    padding: spacing.lg,
+    ...shadows.md,
   },
   gameCardContent: {
     flexDirection: 'row',
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
   coverContainer: {
-    marginRight: 16,
+    marginRight: spacing.lg,
   },
   coverImage: {
     width: 80,
     height: 100,
-    borderRadius: 8,
+    borderRadius: borderRadius.sm,
   },
   coverPlaceholder: {
     width: 80,
     height: 100,
-    borderRadius: 8,
-    backgroundColor: '#f1f3f5',
+    borderRadius: borderRadius.sm,
+    backgroundColor: colors.tertiary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   coverPlaceholderText: {
-    fontSize: 32,
+    fontSize: fontSize.huge,
   },
   gameInfo: {
     flex: 1,
   },
   gameName: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#2c3e50',
-    marginBottom: 8,
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.bold,
+    color: colors.textPrimary,
+    marginBottom: spacing.sm,
   },
   platformContainer: {
     marginBottom: 6,
   },
   platformText: {
-    fontSize: 13,
-    color: '#7f8c8d',
-    fontWeight: '500',
+    fontSize: fontSize.xs + 1,
+    color: colors.textSecondary,
+    fontWeight: fontWeight.medium,
   },
   releaseDate: {
-    fontSize: 13,
-    color: '#7f8c8d',
-    marginBottom: 8,
+    fontSize: fontSize.xs + 1,
+    color: colors.textSecondary,
+    marginBottom: spacing.sm,
   },
   summary: {
-    fontSize: 13,
-    color: '#95a5a6',
+    fontSize: fontSize.xs + 1,
+    color: colors.textTertiary,
     lineHeight: 18,
   },
   actionButtons: {
     flexDirection: 'row',
-    gap: 12,
+    gap: spacing.md,
   },
   detailsButton: {
     flex: 1,
-    backgroundColor: '#f1f3f5',
-    borderRadius: 10,
-    paddingVertical: 12,
+    backgroundColor: colors.tertiary,
+    borderRadius: borderRadius.md,
+    paddingVertical: spacing.md,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#e1e8ed',
+    borderColor: colors.border,
   },
   detailsButtonText: {
-    color: '#495057',
-    fontSize: 15,
-    fontWeight: '600',
+    color: colors.textSecondary,
+    fontSize: fontSize.md - 1,
+    fontWeight: fontWeight.semibold,
   },
   addButton: {
     flex: 1,
-    backgroundColor: '#3498db',
-    borderRadius: 10,
-    paddingVertical: 12,
+    backgroundColor: colors.accent,
+    borderRadius: borderRadius.md,
+    paddingVertical: spacing.md,
     alignItems: 'center',
-    shadowColor: '#3498db',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 4,
+    ...shadows.md,
   },
   addButtonText: {
-    color: '#ffffff',
-    fontSize: 15,
-    fontWeight: '700',
+    color: '#FFFFFF',
+    fontSize: fontSize.md - 1,
+    fontWeight: fontWeight.bold,
   },
   loadingContainer: {
     flex: 1,
@@ -276,10 +272,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#7f8c8d',
-    fontWeight: '500',
+    marginTop: spacing.lg,
+    fontSize: fontSize.md,
+    color: colors.textSecondary,
+    fontWeight: fontWeight.medium,
   },
   emptyState: {
     flex: 1,
@@ -289,31 +285,31 @@ const styles = StyleSheet.create({
   },
   emptyStateIcon: {
     fontSize: 64,
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
   emptyStateTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#2c3e50',
-    marginBottom: 8,
+    fontSize: fontSize.xl,
+    fontWeight: fontWeight.bold,
+    color: colors.textPrimary,
+    marginBottom: spacing.sm,
     textAlign: 'center',
   },
   emptyStateText: {
-    fontSize: 15,
-    color: '#7f8c8d',
+    fontSize: fontSize.md - 1,
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 22,
-    marginBottom: 24,
+    marginBottom: spacing.xxl,
   },
   backButton: {
-    backgroundColor: '#3498db',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 10,
+    backgroundColor: colors.accent,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xxl,
+    borderRadius: borderRadius.md,
   },
   backButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
+    color: '#FFFFFF',
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.semibold,
   },
 });

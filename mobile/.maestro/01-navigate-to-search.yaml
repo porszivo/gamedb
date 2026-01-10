@@ -1,0 +1,25 @@
+# Test: Navigation zur Spielesuche
+# Überprüft, ob der Benutzer von einer leeren Bibliothek zur Spielesuche navigieren kann
+---
+appId: host.exp.Exponent
+name: Navigate to Search Screen
+tags:
+  - navigation
+  - smoke
+
+---
+# Warte darauf, dass die App lädt
+- launchApp
+
+# Warte auf den Empty State (falls die Bibliothek leer ist)
+- assertVisible:
+    id: "empty-library-state"
+
+# Klicke auf den "Spiele durchsuchen" Button
+- tapOn:
+    id: "empty-state-add-games-button"
+
+# Verifiziere, dass wir auf dem Search Screen sind
+- assertVisible: "Spielname"
+- assertVisible:
+    id: "game-search-input"

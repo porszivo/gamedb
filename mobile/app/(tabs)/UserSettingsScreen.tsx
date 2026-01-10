@@ -4,7 +4,8 @@ import { useUserStore } from '@/store/useUserStore';
 import { getAllPlatforms, getPlatformLabel, IGDBPlatform } from '@/components/game/Platforms';
 import UserPlatform from '@/components/profile/UserPlatform';
 import { useTheme } from '@/theme/useTheme';
-import { ThemeMode } from '@/theme/types';
+import { ThemeMode, ColorPalette } from '@/theme/types';
+import { borderRadius, spacing, shadows } from '@/theme/tokens';
 
 const LANGUAGES = [
   {code: 'de', label: '🇩🇪 Deutsch', flag: '🇩🇪'},
@@ -66,6 +67,7 @@ export default function UserSettingsScreen() {
 
       <ScrollView
         style={styles.content}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         {/* Language Section */}
@@ -230,10 +232,13 @@ export default function UserSettingsScreen() {
   );
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: ColorPalette) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.primary,
+  },
+  scrollContent: {
+    paddingBottom: 100, // Space for floating tab bar
   },
   header: {
     flexDirection: 'row',
@@ -270,9 +275,9 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   section: {
     backgroundColor: colors.secondary,
-    marginTop: 20,
-    paddingVertical: 24,
-    paddingHorizontal: 20,
+    marginTop: spacing.xl,
+    paddingVertical: spacing.xxl,
+    paddingHorizontal: spacing.xl,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -296,6 +301,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 14,
     color: colors.textSecondary,
     lineHeight: 20,
+    fontWeight: '400',
   },
   languageList: {
     gap: 12,
@@ -303,19 +309,16 @@ const createStyles = (colors: any) => StyleSheet.create({
   languageOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    padding: spacing.lg,
     backgroundColor: colors.tertiary,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: 'transparent',
+    borderRadius: borderRadius.md,
   },
   languageOptionSelected: {
     backgroundColor: colors.surfaceVariant,
-    borderColor: colors.accent,
   },
   languageFlag: {
     fontSize: 28,
-    marginRight: 12,
+    marginRight: spacing.md,
   },
   languageLabel: {
     flex: 1,
@@ -325,29 +328,29 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   languageLabelSelected: {
     color: colors.textPrimary,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   checkmark: {
     width: 28,
     height: 28,
-    borderRadius: 14,
+    borderRadius: borderRadius.full,
     backgroundColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkmarkIcon: {
-    color: '#ffffff',
+    color: colors.secondary,
     fontSize: 16,
     fontWeight: 'bold',
   },
   infoCard: {
     flexDirection: 'row',
     backgroundColor: colors.tertiary,
-    margin: 20,
-    padding: 16,
-    borderRadius: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.warning,
+    margin: spacing.xl,
+    padding: spacing.lg,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   infoIcon: {
     fontSize: 24,
@@ -380,23 +383,15 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   modalContainer: {
     backgroundColor: colors.elevated,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: borderRadius.xl,
+    borderTopRightRadius: borderRadius.xl,
     maxHeight: '70%',
-    shadowColor: colors.shadow,
-    shadowOffset: {
-      width: 0,
-      height: -4,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    elevation: 10,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
+    padding: spacing.xl,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
@@ -408,7 +403,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   modalClose: {
     width: 32,
     height: 32,
-    borderRadius: 16,
+    borderRadius: borderRadius.full,
     backgroundColor: colors.tertiary,
     alignItems: 'center',
     justifyContent: 'center',
@@ -416,7 +411,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   modalCloseIcon: {
     fontSize: 24,
     color: colors.textSecondary,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   platformPickerList: {
     flex: 1,
@@ -434,7 +429,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   platformPickerText: {
     fontSize: 16,
     color: colors.textPrimary,
-    fontWeight: '500',
+    fontWeight: '400',
   },
   platformPickerSeparator: {
     height: 1,

@@ -14,6 +14,7 @@ export class GameController {
         searchTerm,
         platform as string
       );
+
       res.json( games );
     } catch (error) {
       console.error('Search games error:', error);

@@ -1,28 +1,49 @@
 import { useMemo } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Game } from '@/store/useGameStore';
 import { useTheme } from '@/theme/useTheme';
+import { ColorPalette } from '@/theme/types';
+import { borderRadius, spacing, shadows } from '@/theme/tokens';
+import { getPlatformColor, getPlatformShortName, normalizePlatformName } from '@/components/game/Platforms';
 
 interface GameCardListProps {
   game: Game;
   onPress: () => void;
-  onActionPress?: () => void;
   isFavorite?: boolean;
-  addedDate?: string;
 }
 
-export function GameCardList({game, onPress, onActionPress, isFavorite = false, addedDate}: GameCardListProps) {
+export function GameCardList({game, onPress, isFavorite = false}: GameCardListProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
+  // Normalize and deduplicate platforms
+  const normalizedPlatforms = useMemo(() => {
+    const uniquePlatforms = new Map<string, string>();
+    game.platforms.forEach(platform => {
+      const normalized = normalizePlatformName(platform);
+      if (!uniquePlatforms.has(normalized)) {
+        uniquePlatforms.set(normalized, platform);
+      }
+    });
+    return Array.from(uniquePlatforms.values());
+  }, [game.platforms]);
+
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
-      {/* Cover */}
-      <View style={styles.coverContainer}>
+    <TouchableOpacity
+      style={styles.card}
+      onPress={onPress}
+      activeOpacity={0.7}
+      accessibilityLabel={`${game.name}${game.platforms?.length > 0 ? `, verfügbar auf ${game.platforms.join(', ')}` : ''}`}
+      accessibilityRole="button"
+      accessibilityHint="Doppeltippen um Details anzuzeigen"
+    >
+      {/* Thumbnail */}
+      <View style={styles.thumbnailContainer}>
         {game.coverUrl ? (
-          <Image source={{uri: game.coverUrl}} style={styles.cover} resizeMode="cover"/>
+          <Image source={{uri: game.coverUrl}} style={styles.thumbnail} resizeMode="cover"/>
         ) : (
-          <View style={styles.coverPlaceholder}>
+          <View style={styles.thumbnailPlaceholder}>
             <Text style={styles.placeholderIcon}>🎮</Text>
           </View>
         )}
@@ -30,113 +51,109 @@ export function GameCardList({game, onPress, onActionPress, isFavorite = false, 
 
       {/* Info */}
       <View style={styles.info}>
-        <View style={styles.header}>
-          <Text style={styles.title} numberOfLines={1}>
-            {game.name}
-          </Text>
-          {isFavorite && <Text style={styles.favoriteIcon}>⭐</Text>}
-        </View>
-        {game.platforms.length > 0 && (
-          <Text style={styles.platform}>
-            {game.platforms.slice(0, 2).join(', ')}
-            {game.platforms.length > 2 && ` +${game.platforms.length - 2}`}
-          </Text>
-        )}
-        {addedDate && (
-          <Text style={styles.date}>
-            Hinzugefügt: {new Date(addedDate).toLocaleDateString('de-DE')}
-          </Text>
+        <Text style={styles.title} numberOfLines={1}>
+          {game.name}
+        </Text>
+        {normalizedPlatforms.length > 0 && (
+          <View style={styles.platformContainer}>
+            {normalizedPlatforms.slice(0, 3).map((platform, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.platformBadge,
+                  { backgroundColor: getPlatformColor(platform) }
+                ]}
+              >
+                <Text style={styles.platformText}>
+                  {getPlatformShortName(platform)}
+                </Text>
+              </View>
+            ))}
+            {normalizedPlatforms.length > 3 && (
+              <Text style={styles.platformMore}>+{normalizedPlatforms.length - 3}</Text>
+            )}
+          </View>
         )}
       </View>
 
-      {/* Actions */}
-      {onActionPress && (
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={(e) => {
-            e.stopPropagation();
-            onActionPress();
-          }}
-        >
-          <Text style={styles.actionIcon}>⋯</Text>
-        </TouchableOpacity>
-      )}
+      {/* Arrow */}
+      <MaterialCommunityIcons
+        name="chevron-right"
+        size={24}
+        color={colors.textTertiary}
+        style={styles.arrow}
+      />
     </TouchableOpacity>
   );
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: ColorPalette) => StyleSheet.create({
   card: {
     flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: colors.secondary,
-    borderRadius: 16,
-    padding: 12,
-    shadowColor: colors.shadow,
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 3,
+    borderRadius: borderRadius.lg,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
+    ...shadows.sm,
   },
-  coverContainer: {
-    width: 60,
-    height: 80,
-    borderRadius: 8,
+  thumbnailContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: borderRadius.sm,
     overflow: 'hidden',
     backgroundColor: colors.tertiary,
   },
-  cover: {
+  thumbnail: {
     width: '100%',
     height: '100%',
   },
-  coverPlaceholder: {
+  thumbnailPlaceholder: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.tertiary,
   },
   placeholderIcon: {
-    fontSize: 24,
+    fontSize: 20,
   },
   info: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: spacing.md,
     justifyContent: 'center',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 6,
   },
   title: {
-    flex: 1,
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '600',
     color: colors.textPrimary,
-    marginRight: 8,
+    marginBottom: 6,
   },
-  favoriteIcon: {
-    fontSize: 16,
+  platformContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flexWrap: 'wrap',
   },
-  platform: {
-    fontSize: 13,
-    color: colors.textSecondary,
-    marginBottom: 4,
-  },
-  date: {
-    fontSize: 12,
-    color: colors.textTertiary,
-  },
-  actionButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.tertiary,
+  platformBadge: {
+    minWidth: 32,
+    height: 32,
+    paddingHorizontal: 6,
+    borderRadius: 6,
     alignItems: 'center',
     justifyContent: 'center',
-    alignSelf: 'center',
   },
-  actionIcon: {
-    fontSize: 20,
-    color: colors.textSecondary,
+  platformText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  platformMore: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.textTertiary,
+    marginLeft: 2,
+  },
+  arrow: {
+    marginLeft: spacing.sm,
   },
 });

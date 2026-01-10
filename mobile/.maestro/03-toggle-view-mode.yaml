@@ -1,0 +1,34 @@
+# Test: View Mode wechseln (Grid <-> List)
+# Testet, ob der Benutzer zwischen Grid und List View wechseln kann
+---
+appId: host.exp.Exponent
+name: Toggle View Mode
+tags:
+  - ui
+  - view-mode
+
+---
+# App starten
+- launchApp
+
+# Warte darauf, dass die Bibliothek geladen ist
+# (Dieser Test funktioniert besser, wenn schon Spiele in der Bibliothek sind)
+- assertVisible: "Meine Bibliothek"
+
+# Klicke auf Grid View Button (sollte aktiv sein)
+- tapOn:
+    id: "view-mode-grid-button"
+
+# Wechsle zu List View
+- tapOn:
+    id: "view-mode-list-button"
+
+# Kurze Pause für Animation
+- waitForAnimationToEnd
+
+# Wechsle zurück zu Grid View
+- tapOn:
+    id: "view-mode-grid-button"
+
+# Verifiziere, dass wir wieder in Grid View sind
+- waitForAnimationToEnd

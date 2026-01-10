@@ -51,3 +51,6 @@ mobile/dist/
 mobile/*.tgz
 
 mobile/.vscode/
+
+# Claude Code
+CLAUDE.md

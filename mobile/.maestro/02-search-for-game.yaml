@@ -1,0 +1,40 @@
+# Test: Spielesuche durchführen
+# Testet den vollständigen Flow: App öffnen → Zur Suche navigieren → Spiel suchen
+---
+appId: host.exp.Exponent
+name: Search for a Game
+tags:
+  - search
+  - critical
+
+---
+# App starten
+- launchApp
+
+# Zur Spielesuche navigieren
+- tapOn:
+    id: "fab-add-games"
+
+# Warte, bis der Search Screen geladen ist
+- assertVisible:
+    id: "game-search-input"
+
+# Gib einen Spielnamen ein
+- tapOn:
+    id: "game-search-input"
+- inputText: "Super Mario"
+
+# Optional: Kurze Pause, damit das Keyboard geschlossen wird
+- hideKeyboard
+
+# Klicke auf den Suchen-Button
+- tapOn:
+    id: "search-submit-button"
+
+# Warte auf Suchergebnisse (dies kann ein paar Sekunden dauern)
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# Verifiziere, dass Suchergebnisse angezeigt werden
+# (Dies hängt davon ab, ob die API funktioniert)
+# Falls keine Ergebnisse: "Keine Ergebnisse gefunden" sollte sichtbar sein

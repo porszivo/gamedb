@@ -1,6 +1,11 @@
 import { Image, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Game } from '@/store/useGameStore';
+import { useTheme } from '@/theme/useTheme';
+import { ColorPalette } from '@/theme/types';
+import { useMemo } from 'react';
+import { borderRadius, spacing, shadows } from '@/theme/tokens';
+import { getPlatformColor, getPlatformShortName, normalizePlatformName } from '@/components/game/Platforms';
 
 type GameCardProps = {
   game: Game,
@@ -14,16 +19,30 @@ export default function GameCard({
                                    onAddToLibrary,
                                    showAddButton = true
                                  }: GameCardProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const releaseYear = game.releaseDate
     ? new Date(game.releaseDate).getFullYear()
     : null;
 
+  // Normalize and deduplicate platforms
+  const normalizedPlatforms = useMemo(() => {
+    const uniquePlatforms = new Map<string, string>();
+    game.platforms.forEach(platform => {
+      const normalized = normalizePlatformName(platform);
+      if (!uniquePlatforms.has(normalized)) {
+        uniquePlatforms.set(normalized, platform);
+      }
+    });
+    return Array.from(uniquePlatforms.values());
+  }, [game.platforms]);
+
   return (
     <Pressable
       style={styles.card}
       onPress={onPress}
-      android_ripple={{color: 'rgba(52, 152, 219, 0.1)'}}
+      android_ripple={{color: colors.ripple}}
     >
       {/* Cover Image mit Gradient Overlay */}
       <View style={styles.coverSection}>
@@ -73,13 +92,24 @@ export default function GameCard({
         )}
 
         {/* Platforms */}
-        {game.platforms && game.platforms.length > 0 && (
+        {normalizedPlatforms.length > 0 && (
           <View style={styles.platformsContainer}>
-            <Text style={styles.platformsLabel}>🎮</Text>
-            <Text style={styles.platformsText} numberOfLines={1}>
-              {game.platforms.slice(0, 2).join(' • ')}
-              {game.platforms.length > 2 && ` +${game.platforms.length - 2}`}
-            </Text>
+            {normalizedPlatforms.slice(0, 4).map((platform, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.platformBadge,
+                  { backgroundColor: getPlatformColor(platform) }
+                ]}
+              >
+                <Text style={styles.platformText}>
+                  {getPlatformShortName(platform)}
+                </Text>
+              </View>
+            ))}
+            {normalizedPlatforms.length > 4 && (
+              <Text style={styles.platformMore}>+{normalizedPlatforms.length - 4}</Text>
+            )}
           </View>
         )}
 
@@ -102,7 +132,7 @@ export default function GameCard({
           >
             <View style={styles.addButtonContent}>
               <Text style={styles.addButtonIcon}>+</Text>
-              <Text style={styles.addButtonText}>Zur Bibliothek</Text>
+              <Text style={styles.addButtonText}>Add</Text>
             </View>
           </TouchableOpacity>
         )}
@@ -111,24 +141,17 @@ export default function GameCard({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ColorPalette) => StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
+    backgroundColor: colors.secondary,
+    borderRadius: borderRadius.md,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    elevation: 6,
+    ...shadows.sm,
   },
   coverSection: {
     position: 'relative',
     height: 200,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: colors.tertiary,
   },
   coverImage: {
     width: '100%',
@@ -158,102 +181,100 @@ const styles = StyleSheet.create({
   },
   yearBadge: {
     position: 'absolute',
-    top: 12,
-    right: 12,
+    top: spacing.md,
+    right: spacing.md,
     backgroundColor: 'rgba(0,0,0,0.7)',
-    paddingHorizontal: 10,
+    paddingHorizontal: spacing.sm,
     paddingVertical: 6,
-    borderRadius: 8,
-    backdropFilter: 'blur(10px)',
+    borderRadius: borderRadius.sm,
   },
   yearText: {
-    color: '#ffffff',
+    color: '#FFFFFF',
     fontSize: 13,
     fontWeight: '700',
   },
   content: {
-    padding: 16,
+    padding: spacing.lg,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#1a1a2e',
-    marginBottom: 12,
-    lineHeight: 26,
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    marginBottom: spacing.md,
+    lineHeight: 24,
   },
   genresContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   genreTag: {
-    backgroundColor: '#e8f4f8',
-    paddingHorizontal: 10,
+    backgroundColor: colors.genreTagBg,
+    paddingHorizontal: spacing.sm,
     paddingVertical: 5,
-    borderRadius: 12,
+    borderRadius: borderRadius.md,
     borderWidth: 1,
-    borderColor: '#c2e0ec',
+    borderColor: colors.genreTagBorder,
   },
   genreText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#2c7a9e',
+    color: colors.genreTagText,
   },
   platformsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 10,
+    gap: 8,
+    marginBottom: spacing.md,
+    flexWrap: 'wrap',
   },
-  platformsLabel: {
-    fontSize: 14,
-    marginRight: 8,
+  platformBadge: {
+    minWidth: 36,
+    height: 36,
+    paddingHorizontal: 8,
+    borderRadius: borderRadius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  platformsText: {
-    flex: 1,
-    fontSize: 13,
+  platformText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  platformMore: {
+    fontSize: 12,
     fontWeight: '600',
-    color: '#495057',
+    color: colors.textTertiary,
   },
   summary: {
     fontSize: 14,
-    color: '#6c757d',
+    color: colors.textSecondary,
     lineHeight: 20,
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
   addButton: {
-    backgroundColor: '#3498db',
-    borderRadius: 14,
+    backgroundColor: colors.accent,
+    borderRadius: borderRadius.md,
     overflow: 'hidden',
-    shadowColor: '#3498db',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+    ...shadows.md,
   },
   addButtonContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 14,
-    paddingHorizontal: 20,
+    paddingHorizontal: spacing.xl,
   },
   addButtonIcon: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#ffffff',
-    marginRight: 8,
+    color: '#FFFFFF',
+    marginRight: spacing.sm,
   },
   addButtonText: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#ffffff',
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
 });
