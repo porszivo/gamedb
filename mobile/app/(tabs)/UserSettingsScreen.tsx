@@ -1,11 +1,18 @@
 import React, { useState, useMemo } from 'react';
 import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, } from 'react-native';
 import { useUserStore } from '@/store/useUserStore';
-import { getAllPlatforms, getPlatformLabel, IGDBPlatform } from '@/components/game/Platforms';
+import {
+  getPlatformLabel,
+  getPlatformShortName,
+  IGDBPlatform,
+  PlatformManufacturer,
+  PlatformsByManufacturer,
+  getManufacturerColor,
+} from '@/components/game/Platforms';
 import UserPlatform from '@/components/profile/UserPlatform';
 import { useTheme } from '@/theme/useTheme';
 import { ThemeMode, ColorPalette } from '@/theme/types';
-import { borderRadius, spacing, shadows } from '@/theme/tokens';
+import { borderRadius, spacing } from '@/theme/tokens';
 
 const LANGUAGES = [
   {code: 'de', label: '🇩🇪 Deutsch', flag: '🇩🇪'},
@@ -28,18 +35,39 @@ export default function UserSettingsScreen() {
   } = useUserStore();
 
   const [showPlatformPicker, setShowPlatformPicker] = useState(false);
+  const [selectedPlatforms, setSelectedPlatforms] = useState<IGDBPlatform[]>([]);
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   const handleLanguageChange = (languageCode: string) => {
     changeLanguage(languageCode);
   };
 
-  const handleShowPlatformPicker = () => {
+  const handleOpenPlatformPicker = () => {
+    setSelectedPlatforms([...userSettings.platforms]);
     setShowPlatformPicker(true);
   };
 
-  const handleAddPlatform = (platform: IGDBPlatform) => {
-    addPlatform(platform);
+  const handleTogglePlatform = (platform: IGDBPlatform) => {
+    setSelectedPlatforms(prev =>
+      prev.includes(platform)
+        ? prev.filter(p => p !== platform)
+        : [...prev, platform]
+    );
+  };
+
+  const handleSavePlatforms = () => {
+    // Remove platforms that were deselected
+    userSettings.platforms.forEach(platform => {
+      if (!selectedPlatforms.includes(platform)) {
+        removePlatform(platform);
+      }
+    });
+    // Add platforms that were newly selected
+    selectedPlatforms.forEach(platform => {
+      if (!userSettings.platforms.includes(platform)) {
+        addPlatform(platform);
+      }
+    });
     setShowPlatformPicker(false);
   };
 
@@ -58,9 +86,14 @@ export default function UserSettingsScreen() {
     );
   };
 
-  const availablePlatforms = getAllPlatforms().filter(
-    (platform) => !userSettings.platforms.includes(platform)
-  );
+  // Get platforms grouped by manufacturer
+  const platformGroups = useMemo(() => {
+    return Object.entries(PlatformsByManufacturer).map(([manufacturer, platforms]) => ({
+      manufacturer: manufacturer as PlatformManufacturer,
+      platforms,
+      color: getManufacturerColor(manufacturer as PlatformManufacturer),
+    }));
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -161,7 +194,7 @@ export default function UserSettingsScreen() {
         </View>
 
         {/* Platforms Section */}
-        <UserPlatform onShowPlatformPicker={() => setShowPlatformPicker(true)}/>
+        <UserPlatform onShowPlatformPicker={handleOpenPlatformPicker}/>
 
         {/* Info Card */}
         <View style={styles.infoCard}>
@@ -179,7 +212,7 @@ export default function UserSettingsScreen() {
       {/* Platform Picker Modal */}
       {showPlatformPicker && (
         <View style={styles.modalOverlay}>
-          <View style={styles.modalBackdrop}>r
+          <View style={styles.modalBackdrop}>
             <TouchableOpacity
               style={styles.modalBackdropTouchable}
               onPress={() => setShowPlatformPicker(false)}
@@ -189,7 +222,7 @@ export default function UserSettingsScreen() {
 
           <View style={styles.modalContainer}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Plattform auswählen</Text>
+              <Text style={styles.modalTitle}>Plattformen auswählen</Text>
               <TouchableOpacity
                 onPress={() => setShowPlatformPicker(false)}
                 style={styles.modalClose}
@@ -197,34 +230,57 @@ export default function UserSettingsScreen() {
                 <Text style={styles.modalCloseIcon}>×</Text>
               </TouchableOpacity>
             </View>
+
             <ScrollView style={styles.platformPickerScrollView}>
-              {availablePlatforms.length > 0 ? (
-                availablePlatforms.map((platform, index) => (
-                  <React.Fragment key={platform}>
-                    <TouchableOpacity
-                      style={styles.platformPickerItem}
-                      onPress={() => handleAddPlatform(platform)}
-                      activeOpacity={0.7}
-                    >
-                      <Text style={styles.platformPickerIcon}>🎮</Text>
-                      <Text style={styles.platformPickerText}>
-                        {getPlatformLabel(platform as IGDBPlatform)}
-                      </Text>
-                    </TouchableOpacity>
-                    {index < availablePlatforms.length - 1 && (
-                      <View style={styles.platformPickerSeparator}/>
-                    )}
-                  </React.Fragment>
-                ))
-              ) : (
-                <View style={styles.noPlatformsContainer}>
-                  <Text style={styles.noPlatformsIcon}>✓</Text>
-                  <Text style={styles.noPlatformsText}>
-                    Alle Plattformen wurden bereits hinzugefügt!
-                  </Text>
+              {platformGroups.map(({manufacturer, platforms, color}) => (
+                <View key={manufacturer} style={styles.manufacturerSection}>
+                  <View style={styles.manufacturerHeader}>
+                    <View style={[styles.manufacturerDot, {backgroundColor: color}]} />
+                    <Text style={styles.manufacturerTitle}>{manufacturer}</Text>
+                  </View>
+
+                  <View style={styles.platformGrid}>
+                    {platforms.map(platform => {
+                      const isSelected = selectedPlatforms.includes(platform);
+                      return (
+                        <TouchableOpacity
+                          key={platform}
+                          style={[
+                            styles.platformChip,
+                            isSelected && {backgroundColor: color},
+                          ]}
+                          onPress={() => handleTogglePlatform(platform)}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={[
+                            styles.platformChipText,
+                            isSelected && styles.platformChipTextSelected,
+                          ]}>
+                            {getPlatformShortName(getPlatformLabel(platform))}
+                          </Text>
+                          {isSelected && (
+                            <Text style={styles.platformChipCheck}>✓</Text>
+                          )}
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
                 </View>
-              )}
+              ))}
             </ScrollView>
+
+            <View style={styles.modalFooter}>
+              <Text style={styles.selectedCount}>
+                {selectedPlatforms.length} ausgewählt
+              </Text>
+              <TouchableOpacity
+                style={styles.saveButton}
+                onPress={handleSavePlatforms}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.saveButtonText}>Fertig</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       )}
@@ -437,7 +493,7 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     marginLeft: 56,
   },
   platformPickerScrollView: {
-    maxHeight: 400,
+    maxHeight: 450,
   },
   noPlatformsContainer: {
     padding: 40,
@@ -451,5 +507,80 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     fontSize: 15,
     color: colors.textSecondary,
     textAlign: 'center',
-  }
+  },
+  manufacturerSection: {
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
+  },
+  manufacturerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  manufacturerDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: spacing.sm,
+  },
+  manufacturerTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  platformGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  platformChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    backgroundColor: colors.tertiary,
+    borderRadius: borderRadius.md,
+    minWidth: 60,
+  },
+  platformChipText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textSecondary,
+  },
+  platformChipTextSelected: {
+    color: '#FFFFFF',
+  },
+  platformChipCheck: {
+    marginLeft: 6,
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  selectedCount: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    fontWeight: '500',
+  },
+  saveButton: {
+    backgroundColor: colors.accent,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xxl,
+    borderRadius: borderRadius.md,
+  },
+  saveButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
 });

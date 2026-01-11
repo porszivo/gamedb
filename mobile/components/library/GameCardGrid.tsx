@@ -52,26 +52,41 @@ export function GameCardGrid({ game, onPress }: GameCardGridProps) {
         <Text style={styles.title} numberOfLines={2}>
           {game.name}
         </Text>
-        {normalizedPlatforms.length > 0 && (
-          <View style={styles.platformContainer}>
-            {normalizedPlatforms.slice(0, 2).map((platform, index) => (
-              <View
-                key={index}
-                style={[
-                  styles.platformBadge,
-                  { backgroundColor: getPlatformColor(platform) }
-                ]}
-              >
-                <Text style={styles.platformText}>
-                  {getPlatformShortName(platform)}
-                </Text>
-              </View>
-            ))}
-            {normalizedPlatforms.length > 2 && (
-              <Text style={styles.platformMore}>+{normalizedPlatforms.length - 2}</Text>
-            )}
-          </View>
-        )}
+        <View style={styles.platformContainer}>
+          {game.userPlatform ? (
+            // Show user's owned platform
+            <View
+              style={[
+                styles.platformBadge,
+                { backgroundColor: getPlatformColor(game.userPlatform) }
+              ]}
+            >
+              <Text style={styles.platformText}>
+                {getPlatformShortName(game.userPlatform)}
+              </Text>
+            </View>
+          ) : normalizedPlatforms.length > 0 ? (
+            // Fallback: show available platforms
+            <>
+              {normalizedPlatforms.slice(0, 2).map((platform, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.platformBadge,
+                    { backgroundColor: getPlatformColor(platform) }
+                  ]}
+                >
+                  <Text style={styles.platformText}>
+                    {getPlatformShortName(platform)}
+                  </Text>
+                </View>
+              ))}
+              {normalizedPlatforms.length > 2 && (
+                <Text style={styles.platformMore}>+{normalizedPlatforms.length - 2}</Text>
+              )}
+            </>
+          ) : null}
+        </View>
       </View>
     </TouchableOpacity>
   );

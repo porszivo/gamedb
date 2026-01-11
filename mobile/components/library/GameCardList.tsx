@@ -1,5 +1,6 @@
-import { useMemo } from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useRef, useMemo } from 'react';
+import { Animated, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Game } from '@/store/useGameStore';
 import { useTheme } from '@/theme/useTheme';
@@ -10,12 +11,14 @@ import { getPlatformColor, getPlatformShortName, normalizePlatformName } from '@
 interface GameCardListProps {
   game: Game;
   onPress: () => void;
+  onDelete?: () => void;
   isFavorite?: boolean;
 }
 
-export function GameCardList({game, onPress, isFavorite = false}: GameCardListProps) {
+export function GameCardList({game, onPress, onDelete, isFavorite = false}: GameCardListProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const swipeableRef = useRef<Swipeable>(null);
 
   // Normalize and deduplicate platforms
   const normalizedPlatforms = useMemo(() => {
@@ -29,7 +32,38 @@ export function GameCardList({game, onPress, isFavorite = false}: GameCardListPr
     return Array.from(uniquePlatforms.values());
   }, [game.platforms]);
 
-  return (
+  const renderRightActions = (
+    progress: Animated.AnimatedInterpolation<number>,
+    dragX: Animated.AnimatedInterpolation<number>
+  ) => {
+    const scale = dragX.interpolate({
+      inputRange: [-100, 0],
+      outputRange: [1, 0.5],
+      extrapolate: 'clamp',
+    });
+
+    const handleDelete = () => {
+      swipeableRef.current?.close();
+      onDelete?.();
+    };
+
+    return (
+      <TouchableOpacity
+        style={styles.deleteAction}
+        onPress={handleDelete}
+        activeOpacity={0.8}
+      >
+        <Animated.View style={{ transform: [{ scale }] }}>
+          <MaterialCommunityIcons name="trash-can-outline" size={24} color="#FFFFFF" />
+        </Animated.View>
+        <Animated.Text style={[styles.deleteText, { transform: [{ scale }] }]}>
+          Löschen
+        </Animated.Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const cardContent = (
     <TouchableOpacity
       style={styles.card}
       onPress={onPress}
@@ -54,26 +88,41 @@ export function GameCardList({game, onPress, isFavorite = false}: GameCardListPr
         <Text style={styles.title} numberOfLines={1}>
           {game.name}
         </Text>
-        {normalizedPlatforms.length > 0 && (
-          <View style={styles.platformContainer}>
-            {normalizedPlatforms.slice(0, 3).map((platform, index) => (
-              <View
-                key={index}
-                style={[
-                  styles.platformBadge,
-                  { backgroundColor: getPlatformColor(platform) }
-                ]}
-              >
-                <Text style={styles.platformText}>
-                  {getPlatformShortName(platform)}
-                </Text>
-              </View>
-            ))}
-            {normalizedPlatforms.length > 3 && (
-              <Text style={styles.platformMore}>+{normalizedPlatforms.length - 3}</Text>
-            )}
-          </View>
-        )}
+        <View style={styles.platformContainer}>
+          {game.userPlatform ? (
+            // Show user's owned platform
+            <View
+              style={[
+                styles.platformBadge,
+                { backgroundColor: getPlatformColor(game.userPlatform) }
+              ]}
+            >
+              <Text style={styles.platformText}>
+                {getPlatformShortName(game.userPlatform)}
+              </Text>
+            </View>
+          ) : normalizedPlatforms.length > 0 ? (
+            // Fallback: show available platforms
+            <>
+              {normalizedPlatforms.slice(0, 3).map((platform, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.platformBadge,
+                    { backgroundColor: getPlatformColor(platform) }
+                  ]}
+                >
+                  <Text style={styles.platformText}>
+                    {getPlatformShortName(platform)}
+                  </Text>
+                </View>
+              ))}
+              {normalizedPlatforms.length > 3 && (
+                <Text style={styles.platformMore}>+{normalizedPlatforms.length - 3}</Text>
+              )}
+            </>
+          ) : null}
+        </View>
       </View>
 
       {/* Arrow */}
@@ -84,6 +133,22 @@ export function GameCardList({game, onPress, isFavorite = false}: GameCardListPr
         style={styles.arrow}
       />
     </TouchableOpacity>
+  );
+
+  // If no delete handler, render without swipeable
+  if (!onDelete) {
+    return cardContent;
+  }
+
+  return (
+    <Swipeable
+      ref={swipeableRef}
+      renderRightActions={renderRightActions}
+      rightThreshold={40}
+      overshootRight={false}
+    >
+      {cardContent}
+    </Swipeable>
   );
 }
 
@@ -155,5 +220,20 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
   },
   arrow: {
     marginLeft: spacing.sm,
+  },
+  deleteAction: {
+    backgroundColor: colors.error,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 80,
+    marginBottom: spacing.sm,
+    borderRadius: borderRadius.lg,
+    marginLeft: spacing.sm,
+  },
+  deleteText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 4,
   },
 });

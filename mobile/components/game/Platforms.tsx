@@ -60,6 +60,65 @@ export const IGDBPlatformLabels: Record<IGDBPlatform, string> = {
   [IGDBPlatform.NEO_GEO]: 'Neo Geo',
 };
 
+// Platform manufacturer categories
+export enum PlatformManufacturer {
+  NINTENDO = 'Nintendo',
+  SONY = 'Sony',
+  MICROSOFT = 'Microsoft',
+  SEGA = 'Sega',
+  OTHER = 'Andere',
+}
+
+// Map platforms to their manufacturers
+export const PlatformsByManufacturer: Record<PlatformManufacturer, IGDBPlatform[]> = {
+  [PlatformManufacturer.NINTENDO]: [
+    IGDBPlatform.NINTENDO_SWITCH,
+    IGDBPlatform.WII_U,
+    IGDBPlatform.WII,
+    IGDBPlatform.NINTENDO_3DS,
+    IGDBPlatform.NINTENDO_64,
+    IGDBPlatform.SUPER_NINTENDO,
+    IGDBPlatform.NES,
+    IGDBPlatform.GAME_BOY_ADVANCE,
+    IGDBPlatform.GAME_BOY_COLOR,
+    IGDBPlatform.GAME_BOY,
+  ],
+  [PlatformManufacturer.SONY]: [
+    IGDBPlatform.PLAYSTATION_5,
+    IGDBPlatform.PLAYSTATION_4,
+    IGDBPlatform.PLAYSTATION_3,
+    IGDBPlatform.PLAYSTATION_2,
+    IGDBPlatform.PLAYSTATION_1,
+    IGDBPlatform.PLAYSTATION_VITA,
+  ],
+  [PlatformManufacturer.MICROSOFT]: [
+    IGDBPlatform.XBOX_SERIES,
+    IGDBPlatform.XBOX_ONE,
+    IGDBPlatform.XBOX_360,
+    IGDBPlatform.PC,
+  ],
+  [PlatformManufacturer.SEGA]: [
+    IGDBPlatform.DREAMCAST,
+    IGDBPlatform.SEGA_SATURN,
+    IGDBPlatform.SEGA_GENESIS,
+  ],
+  [PlatformManufacturer.OTHER]: [
+    IGDBPlatform.ATARI_2600,
+    IGDBPlatform.NEO_GEO,
+  ],
+};
+
+// Get manufacturer color
+export const getManufacturerColor = (manufacturer: PlatformManufacturer): string => {
+  switch (manufacturer) {
+    case PlatformManufacturer.NINTENDO: return '#E60012';
+    case PlatformManufacturer.SONY: return '#0070CC';
+    case PlatformManufacturer.MICROSOFT: return '#107C10';
+    case PlatformManufacturer.SEGA: return '#0089CF';
+    default: return '#9CA3AF';
+  }
+};
+
 // Helper functions
 export const getPlatformLabel = (platform: IGDBPlatform): string => {
   return IGDBPlatformLabels[platform] || `Platform ${platform}`;
@@ -67,6 +126,13 @@ export const getPlatformLabel = (platform: IGDBPlatform): string => {
 
 export const getAllPlatforms = (): IGDBPlatform[] => {
   return Object.values(IGDBPlatform).filter(v => typeof v === 'number') as IGDBPlatform[];
+};
+
+export const getPlatformsByManufacturer = (): Array<{manufacturer: PlatformManufacturer; platforms: IGDBPlatform[]}> => {
+  return Object.entries(PlatformsByManufacturer).map(([manufacturer, platforms]) => ({
+    manufacturer: manufacturer as PlatformManufacturer,
+    platforms,
+  }));
 };
 
 // Type for search query
@@ -79,14 +145,14 @@ export interface GameSearchQuery {
 export const getPlatformColor = (platformName: string): string => {
   const name = normalizePlatformName(platformName).toLowerCase();
 
-  // Sony PlayStation - Blue
-  if (name.includes('playstation') || name.includes('ps vita')) {
+  // Sony PlayStation - Blue (check for playstation, ps vita, or ps + number like ps4, ps5)
+  if (name.includes('playstation') || name.includes('ps vita') || /\bps[1-5]\b/.test(name)) {
     return '#0070CC';
   }
 
-  // Nintendo - Red
+  // Nintendo - Red (exclude 'genesis' from 'nes' check)
   if (name.includes('nintendo') || name.includes('switch') || name.includes('wii') ||
-      name.includes('game boy') || name.includes('nes') || name.includes('snes')) {
+      name.includes('game boy') || ((name.includes('nes') || name.includes('snes')) && !name.includes('genesis'))) {
     return '#E60012';
   }
 
@@ -123,8 +189,8 @@ export const normalizePlatformName = (platformName: string): string => {
     return 'Super Nintendo';
   }
 
-  // NES = Famicom
-  if (name.includes('nes') && !name.includes('super') && !name.includes('64') || name === 'famicom') {
+  // NES = Famicom (check for exact 'nes' or 'famicom', exclude 'genesis')
+  if ((name === 'nes' || name.includes('nintendo entertainment system') || name === 'famicom') && !name.includes('genesis')) {
     return 'NES';
   }
 
@@ -163,18 +229,18 @@ export const getPlatformShortName = (platformName: string): string => {
   if (name.includes('new nintendo 3ds') || name.includes('n3ds')) return 'N3DS';
   if (name.includes('3ds')) return '3DS';
 
-  // Nintendo Classic
-  if (name.includes('nintendo 64') || name.includes('n64')) return 'N64';
-  if (name.includes('super nintendo') || name.includes('snes') || name.includes('super famicom')) return 'SNES';
-  if (name.includes('nes') && !name.includes('super') && !name.includes('64')) return 'NES';
-  if (name.includes('game boy advance') || name.includes('gba')) return 'GBA';
-  if (name.includes('game boy color') || name.includes('gbc')) return 'GBC';
-  if (name.includes('game boy') || name.includes('gb')) return 'GB';
-
-  // Sega
+  // Sega (check before Nintendo to avoid 'genesis' matching 'nes')
   if (name.includes('dreamcast')) return 'DC';
   if (name.includes('genesis') || name.includes('mega drive')) return 'GEN';
   if (name.includes('saturn')) return 'SAT';
+
+  // Nintendo Classic
+  if (name.includes('nintendo 64') || name.includes('n64')) return 'N64';
+  if (name.includes('super nintendo') || name.includes('snes') || name.includes('super famicom')) return 'SNES';
+  if ((name === 'nes' || name.includes('nintendo entertainment system')) && !name.includes('genesis')) return 'NES';
+  if (name.includes('game boy advance') || name.includes('gba')) return 'GBA';
+  if (name.includes('game boy color') || name.includes('gbc')) return 'GBC';
+  if (name.includes('game boy') || name.includes('gb')) return 'GB';
 
   // PC
   if (name.includes('pc')) return 'PC';

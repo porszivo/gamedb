@@ -2,7 +2,9 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Modal,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -10,35 +12,66 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Game, useGameStore } from '@/store/useGameStore';
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { router } from 'expo-router';
 import GameCard from '@/components/game/GameCard';
 import { useTheme } from '@/theme/useTheme';
 import { spacing, borderRadius, fontSize, fontWeight, shadows } from '@/theme/tokens';
 import { ColorPalette } from '@/theme/types';
+import { normalizePlatformName } from '@/components/game/Platforms';
 
 export default function SearchResults() {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { searchResults, isSearching, addToLibrary, error, clearError } = useGameStore();
 
-  const handleAddToLibrary = (game: Game) => {
-    addToLibrary(game);
-    Alert.alert(
-      '✓ Hinzugefügt',
-      `${game.name} wurde zu deiner Bibliothek hinzugefügt`,
-      [
-        {text: 'OK'},
-        {text: 'Zur Bibliothek', onPress: () => router.back()}
-      ]
-    );
+  const [showPlatformPicker, setShowPlatformPicker] = useState(false);
+  const [selectedGame, setSelectedGame] = useState<Game | null>(null);
+
+  // Get unique normalized platforms for the selected game
+  const availablePlatforms = useMemo(() => {
+    if (!selectedGame) return [];
+    const uniquePlatforms = new Map<string, string>();
+    selectedGame.platforms.forEach(platform => {
+      const normalized = normalizePlatformName(platform);
+      if (!uniquePlatforms.has(normalized)) {
+        uniquePlatforms.set(normalized, normalized);
+      }
+    });
+    return Array.from(uniquePlatforms.values());
+  }, [selectedGame]);
+
+  const handleAddButtonPress = (game: Game) => {
+    setSelectedGame(game);
+    setShowPlatformPicker(true);
+  };
+
+  const handlePlatformSelect = (platform: string) => {
+    if (selectedGame) {
+      addToLibrary(selectedGame, platform);
+      setShowPlatformPicker(false);
+      setSelectedGame(null);
+      Alert.alert(
+        '✓ Hinzugefügt',
+        `${selectedGame.name} (${platform}) wurde zu deiner Bibliothek hinzugefügt`,
+        [
+          {text: 'OK'},
+          {text: 'Zur Bibliothek', onPress: () => router.back()}
+        ]
+      );
+    }
+  };
+
+  const handleClosePlatformPicker = () => {
+    setShowPlatformPicker(false);
+    setSelectedGame(null);
   };
 
   const renderGameCard = ({item}: { item: Game }) => (
     <GameCard
       game={item}
       onPress={() => router.push(`/GameDetailScreen?id=${item.id}`)}
-      onAddToLibrary={() => handleAddToLibrary(item)}
+      onAddToLibrary={() => handleAddButtonPress(item)}
       showAddButton={true}
     />
   );
@@ -132,6 +165,58 @@ export default function SearchResults() {
           ItemSeparatorComponent={() => <View style={styles.separator}/>}
         />
       )}
+
+      {/* Platform Picker Modal */}
+      <Modal
+        visible={showPlatformPicker}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={handleClosePlatformPicker}
+      >
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity
+            style={styles.modalBackdrop}
+            activeOpacity={1}
+            onPress={handleClosePlatformPicker}
+          />
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Plattform auswählen</Text>
+              <TouchableOpacity
+                onPress={handleClosePlatformPicker}
+                style={styles.modalClose}
+              >
+                <MaterialCommunityIcons name="close" size={24} color={colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.modalSubtitle}>
+              Für welche Plattform besitzt du {selectedGame?.name}?
+            </Text>
+            <ScrollView style={styles.platformList}>
+              {availablePlatforms.map((platform, index) => (
+                <React.Fragment key={platform}>
+                  <TouchableOpacity
+                    style={styles.platformItem}
+                    onPress={() => handlePlatformSelect(platform)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.platformItemIcon}>🎮</Text>
+                    <Text style={styles.platformItemText}>{platform}</Text>
+                    <MaterialCommunityIcons
+                      name="chevron-right"
+                      size={20}
+                      color={colors.textTertiary}
+                    />
+                  </TouchableOpacity>
+                  {index < availablePlatforms.length - 1 && (
+                    <View style={styles.platformSeparator} />
+                  )}
+                </React.Fragment>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -311,5 +396,72 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     color: '#FFFFFF',
     fontSize: fontSize.md,
     fontWeight: fontWeight.semibold,
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  modalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: colors.overlay,
+  },
+  modalContainer: {
+    backgroundColor: colors.elevated,
+    borderTopLeftRadius: borderRadius.xl,
+    borderTopRightRadius: borderRadius.xl,
+    maxHeight: '70%',
+    paddingBottom: spacing.xxl,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: spacing.xl,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  modalTitle: {
+    fontSize: fontSize.xl,
+    fontWeight: fontWeight.bold,
+    color: colors.textPrimary,
+  },
+  modalClose: {
+    width: 32,
+    height: 32,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.tertiary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalSubtitle: {
+    fontSize: fontSize.md - 1,
+    color: colors.textSecondary,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
+  },
+  platformList: {
+    maxHeight: 400,
+  },
+  platformItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.xl,
+  },
+  platformItemIcon: {
+    fontSize: 24,
+    marginRight: spacing.md,
+  },
+  platformItemText: {
+    flex: 1,
+    fontSize: fontSize.md,
+    color: colors.textPrimary,
+    fontWeight: fontWeight.medium,
+  },
+  platformSeparator: {
+    height: 1,
+    backgroundColor: colors.border,
+    marginLeft: 56,
   },
 });

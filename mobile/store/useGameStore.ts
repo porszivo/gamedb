@@ -11,6 +11,7 @@ export interface Game {
   coverUrl?: string;
   releaseDate?: string;
   genres?: string[];
+  userPlatform?: string; // The platform the user owns this game for
 }
 
 interface GameStore {
@@ -21,8 +22,8 @@ interface GameStore {
   error: string | null;
 
   searchGames: (query: string, platform?: string) => Promise<Game[]>;
-  addToLibrary: (game: Game) => void;
-  removeFromLibrary: (gameId: number) => void;
+  addToLibrary: (game: Game, userPlatform: string) => void;
+  removeFromLibrary: (gameId: number, userPlatform?: string) => void;
   addToFavorites: (game: Game) => void;
   removeFromFavorites: (gameId: number) => void;
   clearSearchResults: () => void;
@@ -54,15 +55,27 @@ export const useGameStore = create<GameStore>()(
           return [];
         }
       },
-      removeFromLibrary: (gameId: number) => {
+      removeFromLibrary: (gameId: number, userPlatform?: string) => {
         const {userLibrary, favorites} = get();
-        set({userLibrary: userLibrary.filter(game => game.id !== gameId)});
-        set({favorites: favorites.filter(game => game.id !== gameId)});
+        if (userPlatform) {
+          // Remove specific platform version
+          set({userLibrary: userLibrary.filter(
+            game => !(game.id === gameId && game.userPlatform === userPlatform)
+          )});
+        } else {
+          // Remove all versions of this game
+          set({userLibrary: userLibrary.filter(game => game.id !== gameId)});
+          set({favorites: favorites.filter(game => game.id !== gameId)});
+        }
       },
-      addToLibrary: (newGame: Game) => {
+      addToLibrary: (newGame: Game, userPlatform: string) => {
         const {userLibrary} = get();
-        if (!userLibrary.some(game => game.id === newGame.id)) {
-          set({userLibrary: [...userLibrary, newGame]});
+        // Check if game with same ID and platform already exists
+        const alreadyExists = userLibrary.some(
+          game => game.id === newGame.id && game.userPlatform === userPlatform
+        );
+        if (!alreadyExists) {
+          set({userLibrary: [...userLibrary, {...newGame, userPlatform}]});
         }
       },
       addToFavorites: (game: Game) => {

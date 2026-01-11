@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router';
 import React from 'react';
-import {StatusBar} from 'expo-status-bar';
+import { StatusBar } from 'expo-status-bar';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { useTheme } from '@/theme/useTheme';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -34,10 +35,12 @@ function ThemedStack() {
 
 export default function RootLayout() {
   return (
-    <ErrorBoundary>
-      <ThemeProvider>
-        <ThemedStack />
-      </ThemeProvider>
-    </ErrorBoundary>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ErrorBoundary>
+        <ThemeProvider>
+          <ThemedStack />
+        </ThemeProvider>
+      </ErrorBoundary>
+    </GestureHandlerRootView>
   );
 }
